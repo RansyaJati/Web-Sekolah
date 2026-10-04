@@ -1,23 +1,53 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
-import { useState } from 'react';
-import {
-    CAREER_STATS,
-    JOB_LISTINGS,
-    INDUSTRY_PARTNERS,
-    PKL_INFO,
-    FAQ_CAREER,
-} from '@/data/career';
+import { useState, useEffect } from 'react';
+import { CAREER_STATS, PKL_INFO, FAQ_CAREER } from '@/data/career';
+
+interface JobListing {
+    id: number;
+    title: string;
+    company: string;
+    location: string;
+    type: string;
+    category: string;
+    description: string;
+    posted_date: string;
+}
+
+interface IndustryPartner {
+    id: number;
+    name: string;
+    sector: string;
+    description: string;
+    partner_since: string | null;
+}
 
 export default function CareerCenter() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [jobFilter, setJobFilter] = useState('Semua');
+    
+    const [jobs, setJobs] = useState<JobListing[]>([]);
+    const [partners, setPartners] = useState<IndustryPartner[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const jobCategories = ['Semua', ...Array.from(new Set(JOB_LISTINGS.map((j) => j.category)))];
+    useEffect(() => {
+        Promise.all([
+            fetch('/api/jobs').then(r => r.json()),
+            fetch('/api/partners').then(r => r.json())
+        ])
+        .then(([jobsData, partnersData]) => {
+            setJobs(jobsData);
+            setPartners(partnersData);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }, []);
+
+    const jobCategories = ['Semua', ...Array.from(new Set(jobs.map((j) => j.category)))];
     const filteredJobs =
         jobFilter === 'Semua'
-            ? JOB_LISTINGS
-            : JOB_LISTINGS.filter((j) => j.category === jobFilter);
+            ? jobs
+            : jobs.filter((j) => j.category === jobFilter);
 
     return (
         <PublicLayout
@@ -130,7 +160,7 @@ export default function CareerCenter() {
 
                     {/* Filter */}
                     <div className="mt-10 flex flex-wrap justify-center gap-2">
-                        {jobCategories.map((cat) => (
+                        {!loading && jobCategories.map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => setJobFilter(cat)}
@@ -146,6 +176,9 @@ export default function CareerCenter() {
                     </div>
 
                     {/* Job Cards */}
+                    {loading ? (
+                        <div className="mt-10 text-center py-12 text-gray-500">Memuat lowongan kerja...</div>
+                    ) : (
                     <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredJobs.map((job) => (
                             <article
@@ -177,7 +210,7 @@ export default function CareerCenter() {
 
                                 <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
                                     <span className="text-xs text-gray-400">
-                                        {new Date(job.postedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        {new Date(job.posted_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </span>
                                     <button className="text-sm font-semibold text-planetary hover:text-galaxy transition-colors flex items-center gap-1">
                                         Detail
@@ -189,6 +222,7 @@ export default function CareerCenter() {
                             </article>
                         ))}
                     </div>
+                    )}
                 </div>
             </section>
 
@@ -199,8 +233,11 @@ export default function CareerCenter() {
                         title="Mitra Industri"
                         description="Perusahaan yang bekerja sama dengan SMKN 1 Cimahi dalam pengembangan SDM."
                     />
+                    {loading ? (
+                        <div className="mt-12 text-center text-gray-500">Memuat mitra industri...</div>
+                    ) : (
                     <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {INDUSTRY_PARTNERS.map((partner) => (
+                        {partners.map((partner) => (
                             <div
                                 key={partner.id}
                                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
@@ -216,10 +253,13 @@ export default function CareerCenter() {
                                     {partner.sector}
                                 </span>
                                 <p className="mt-3 text-sm text-gray-500 leading-relaxed">{partner.description}</p>
-                                <p className="mt-3 text-xs text-gray-400">Mitra sejak {partner.partnerSince}</p>
+                                {partner.partner_since && (
+                                    <p className="mt-3 text-xs text-gray-400">Mitra sejak {partner.partner_since}</p>
+                                )}
                             </div>
                         ))}
                     </div>
+                    )}
                 </div>
             </section>
 

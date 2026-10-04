@@ -1,34 +1,77 @@
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { useState } from 'react';
-import { JOB_LISTINGS, JobListing } from '@/data/career';
+import { useState, useEffect } from 'react';
+
+interface JobListing {
+    id: number;
+    title: string;
+    company: string;
+    location: string;
+    type: 'Full-time' | 'Part-time' | 'Magang' | 'PKL';
+    category: string;
+    description: string;
+    requirements: string[] | null;
+    posted_date: string;
+    deadline_date: string | null;
+    is_active: boolean;
+}
 
 export default function AdminJobs() {
-    const [jobs, setJobs] = useState<JobListing[]>(JOB_LISTINGS);
+    const [jobs, setJobs] = useState<JobListing[]>([]);
+    const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [title, setTitle] = useState('');
     const [company, setCompany] = useState('');
     const [location, setLocation] = useState('Bandung, Jawa Barat');
-    const [type, setType] = useState<'Full-time' | 'Part-time' | 'Magang' | 'PKL'>('Full-time');
+    const [type, setType] = useState<JobListing['type']>('Full-time');
     const [desc, setDesc] = useState('');
 
-    const handleSave = (e: React.FormEvent) => {
+    useEffect(() => { fetchData(); }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/jobs');
+            setJobs(await res.json());
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newJob: JobListing = {
-            id: 'job-' + Date.now(),
-            title,
-            company,
-            location,
-            type,
-            category: 'Teknologi',
-            description: desc,
-            requirements: ['Lulusan SMK relevan', 'Disiplin dan siap bekerja'],
-            postedDate: new Date().toISOString().split('T')[0]
-        };
-        setJobs([newJob, ...jobs]);
-        setModalOpen(false);
-        setTitle('');
-        setCompany('');
-        setDesc('');
+        setSaving(true);
+        try {
+            const res = await fetch('/api/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': getCsrfToken() },
+                body: JSON.stringify({
+                    title, company, location, type,
+                    category: 'Teknologi',
+                    description: desc,
+                    requirements: ['Lulusan SMK relevan', 'Disiplin dan siap bekerja'],
+                    posted_date: new Date().toISOString().split('T')[0],
+                    is_active: true,
+                }),
+            });
+            if (res.ok) {
+                const created = await res.json();
+                setJobs([created, ...jobs]);
+                setModalOpen(false);
+                setTitle(''); setCompany(''); setDesc('');
+            }
+        } catch (err) { console.error(err); }
+        finally { setSaving(false); }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Hapus lowongan ini?')) return;
+        try {
+            const res = await fetch(`/api/jobs/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-XSRF-TOKEN': getCsrfToken() },
+            });
+            if (res.ok) setJobs(jobs.filter((j) => j.id !== id));
+        } catch (err) { console.error(err); }
     };
 
     return (
@@ -61,7 +104,11 @@ export default function AdminJobs() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {jobs.map((item) => (
+                            {loading ? (
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">Memuat data...</td></tr>
+                            ) : jobs.length === 0 ? (
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">Belum ada lowongan.</td></tr>
+                            ) : jobs.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 font-bold text-galaxy">{item.title}</td>
                                     <td className="px-6 py-4 text-planetary font-medium">{item.company}</td>
@@ -75,10 +122,10 @@ export default function AdminJobs() {
                                             {item.type}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-400">{item.postedDate}</td>
+                                    <td className="px-6 py-4 text-gray-400">{item.posted_date}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button
-                                            onClick={() => setJobs(jobs.filter((j) => j.id !== item.id))}
+                                            onClick={() => handleDelete(item.id)}
                                             className="text-red-600 hover:text-red-700 font-semibold"
                                         >
                                             Hapus
@@ -97,81 +144,56 @@ export default function AdminJobs() {
                     <form onSubmit={handleSave} className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
                         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                             <h3 className="font-bold text-galaxy text-sm">Tambah Lowongan Kerja BKK</h3>
-                            <button type="button" onClick={() => setModalOpen(false)} className="text-gray-400">✕</button>
+                            <button type="button" onClick={() => setModalOpen(false)} className="text-gray-400">&times;</button>
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Posisi Jabatan</label>
-                            <input
-                                type="text"
-                                required
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                            <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Junior Software Developer"
-                                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary"
-                            />
+                                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary" />
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Nama Perusahaan</label>
-                            <input
-                                type="text"
-                                required
-                                value={company}
-                                onChange={(e) => setCompany(e.target.value)}
+                            <input type="text" required value={company} onChange={(e) => setCompany(e.target.value)}
                                 placeholder="PT Telkom Indonesia"
-                                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary"
-                            />
+                                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary" />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Lokasi</label>
-                                <input
-                                    type="text"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary"
-                                />
+                                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
+                                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary" />
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Tipe</label>
-                                <select
-                                    value={type}
-                                    onChange={(e) => setType(e.target.value as any)}
-                                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary"
-                                >
+                                <select value={type} onChange={(e) => setType(e.target.value as JobListing['type'])}
+                                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary">
                                     <option value="Full-time">Full-time</option>
                                     <option value="Magang">Magang</option>
                                     <option value="PKL">PKL</option>
+                                    <option value="Part-time">Part-time</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Deskripsi Singkat</label>
-                            <textarea
-                                rows={3}
-                                value={desc}
-                                onChange={(e) => setDesc(e.target.value)}
+                            <textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)}
                                 placeholder="Tugas dan tanggung jawab posisi..."
-                                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary"
-                            />
+                                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary" />
                         </div>
 
                         <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
-                            <button
-                                type="button"
-                                onClick={() => setModalOpen(false)}
-                                className="px-4 py-2 border border-gray-200 text-xs font-semibold rounded-lg text-gray-600 hover:bg-gray-50"
-                            >
+                            <button type="button" onClick={() => setModalOpen(false)}
+                                className="px-4 py-2 border border-gray-200 text-xs font-semibold rounded-lg text-gray-600 hover:bg-gray-50">
                                 Batal
                             </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-planetary text-white text-xs font-semibold rounded-lg hover:bg-galaxy"
-                            >
-                                Publikasikan Lowongan
+                            <button type="submit" disabled={saving}
+                                className="px-4 py-2 bg-planetary text-white text-xs font-semibold rounded-lg hover:bg-galaxy disabled:opacity-60">
+                                {saving ? 'Menyimpan...' : 'Publikasikan Lowongan'}
                             </button>
                         </div>
                     </form>
@@ -179,4 +201,9 @@ export default function AdminJobs() {
             )}
         </AdminLayout>
     );
+}
+
+function getCsrfToken(): string {
+    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
 }

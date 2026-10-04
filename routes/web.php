@@ -2,6 +2,14 @@
 
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\AchievementController;
+use App\Http\Controllers\Api\ProgramController;
+use App\Http\Controllers\Api\AlumniController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\JobVacancyController;
+use App\Http\Controllers\Api\PartnerController;
+use App\Http\Controllers\Api\KnowledgeBaseController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,6 +30,63 @@ Route::get('/career-center', function () {
 })->name('career-center');
 
 Route::post('/api/chat', [ChatController::class, 'chat'])->name('api.chat');
+
+/*
+|--------------------------------------------------------------------------
+| CMS REST API Routes
+|--------------------------------------------------------------------------
+| JSON endpoints used by admin pages & public pages to read/write data.
+*/
+Route::prefix('api')->group(function () {
+    // Berita
+    Route::get('/news',           [NewsController::class, 'index']);
+    Route::post('/news',          [NewsController::class, 'store']);
+    Route::get('/news/{id}',      [NewsController::class, 'show']);
+    Route::put('/news/{id}',      [NewsController::class, 'update']);
+    Route::delete('/news/{id}',   [NewsController::class, 'destroy']);
+
+    // Prestasi
+    Route::get('/achievements',          [AchievementController::class, 'index']);
+    Route::post('/achievements',         [AchievementController::class, 'store']);
+    Route::put('/achievements/{id}',     [AchievementController::class, 'update']);
+    Route::delete('/achievements/{id}',  [AchievementController::class, 'destroy']);
+
+    // Program Keahlian
+    Route::get('/programs',          [ProgramController::class, 'index']);
+    Route::post('/programs',         [ProgramController::class, 'store']);
+    Route::put('/programs/{id}',     [ProgramController::class, 'update']);
+    Route::delete('/programs/{id}',  [ProgramController::class, 'destroy']);
+
+    // Alumni
+    Route::get('/alumni',          [AlumniController::class, 'index']);
+    Route::post('/alumni',         [AlumniController::class, 'store']);
+    Route::put('/alumni/{id}',     [AlumniController::class, 'update']);
+    Route::delete('/alumni/{id}',  [AlumniController::class, 'destroy']);
+
+    // Produk BLUD
+    Route::get('/products',          [ProductController::class, 'index']);
+    Route::post('/products',         [ProductController::class, 'store']);
+    Route::put('/products/{id}',     [ProductController::class, 'update']);
+    Route::delete('/products/{id}',  [ProductController::class, 'destroy']);
+
+    // Lowongan Kerja BKK
+    Route::get('/jobs',          [JobVacancyController::class, 'index']);
+    Route::post('/jobs',         [JobVacancyController::class, 'store']);
+    Route::put('/jobs/{id}',     [JobVacancyController::class, 'update']);
+    Route::delete('/jobs/{id}',  [JobVacancyController::class, 'destroy']);
+
+    // Mitra Industri
+    Route::get('/partners',          [PartnerController::class, 'index']);
+    Route::post('/partners',         [PartnerController::class, 'store']);
+    Route::put('/partners/{id}',     [PartnerController::class, 'update']);
+    Route::delete('/partners/{id}',  [PartnerController::class, 'destroy']);
+
+    // Knowledge Base AI
+    Route::get('/knowledge-base',          [KnowledgeBaseController::class, 'index']);
+    Route::post('/knowledge-base',         [KnowledgeBaseController::class, 'store']);
+    Route::put('/knowledge-base/{id}',     [KnowledgeBaseController::class, 'update']);
+    Route::delete('/knowledge-base/{id}',  [KnowledgeBaseController::class, 'destroy']);
+});
 
 /*
 |--------------------------------------------------------------------------

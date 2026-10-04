@@ -32,17 +32,37 @@ function useScrollReveal<T extends HTMLElement>(): [(node: T | null) => void, bo
     return [setRef, visible];
 }
 
-/* ── data 9 jurusan ── */
-const JURUSAN: { title: string; duration: string; img: string | null; gradient: string }[] = [
-    { title: 'Rekayasa Perangkat Lunak', duration: 'Program 3 Tahun', img: '/images/rekayasaperangkatlunak.png', gradient: '' },
-    { title: 'Teknik Otomasi Industri', duration: 'Program 3 Tahun', img: '/images/teknikotomasiindustri.png', gradient: '' },
-    { title: 'Produksi dan Siaran Program Televisi', duration: 'Program 3 Tahun', img: '/images/produksisiarandanprogramtelevisi.png', gradient: '' },
-    { title: 'Teknik Mekatronika', duration: 'Program 3 Tahun', img: null, gradient: 'from-universe to-galaxy' },
-    { title: 'Teknik Elektronika Industri', duration: 'Program 3 Tahun', img: null, gradient: 'from-planetary to-galaxy' },
-    { title: 'Teknik Elektronika Komunikasi', duration: 'Program 3 Tahun', img: null, gradient: 'from-venus to-galaxy' },
-    { title: 'Instrumentasi dan Otomatisasi Proses', duration: 'Program 4 Tahun', img: null, gradient: 'from-universe/80 to-galaxy' },
-    { title: 'Teknik Pendingin dan Tata Udara', duration: 'Program 3 Tahun', img: null, gradient: 'from-planetary/70 to-galaxy' },
-    { title: 'Sistem Informatika, Jaringan, dan Aplikasi', duration: 'Program 4 Tahun', img: null, gradient: 'from-sky to-galaxy' },
+interface Program {
+    title: string;
+    duration: string;
+    img: string | null;
+    gradient: string;
+}
+
+interface NewsItem {
+    id: number;
+    title: string;
+    summary: string;
+    thumbnail: string | null;
+    published_at: string;
+}
+
+interface AchievementItem {
+    id: number;
+    title: string;
+    student_name: string;
+    level: string;
+    rank: string;
+    photo: string | null;
+}
+
+const PROGRAM_GRADIENTS = [
+    'from-universe to-galaxy',
+    'from-planetary to-galaxy',
+    'from-venus to-galaxy',
+    'from-universe/80 to-galaxy',
+    'from-planetary/70 to-galaxy',
+    'from-sky to-galaxy',
 ];
 
 export default function Welcome(_props: PageProps) {
@@ -51,11 +71,44 @@ export default function Welcome(_props: PageProps) {
     const [programRef, programVisible] = useScrollReveal<HTMLDivElement>();
     const [beritaRef, beritaVisible] = useScrollReveal<HTMLDivElement>();
 
-    /* ── carousel jurusan ── */
+    /* "?"? carousel jurusan "?"? */
     const trackRef = useRef<HTMLDivElement | null>(null);
     const [canPrev, setCanPrev] = useState(false);
     const [canNext, setCanNext] = useState(true);
     const [activePage, setActivePage] = useState(0);
+
+    // Dynamic data
+    const [programs, setPrograms] = useState<Program[]>([]);
+    const [news, setNews] = useState<NewsItem[]>([]);
+    const [achievements, setAchievements] = useState<AchievementItem[]>([]);
+
+    useEffect(() => {
+        // Fetch programs
+        fetch('/api/programs')
+            .then(res => res.json())
+            .then(data => {
+                const mapped = data.map((p: any, i: number) => ({
+                    title: p.name,
+                    duration: p.duration,
+                    img: p.image,
+                    gradient: p.image ? '' : PROGRAM_GRADIENTS[i % PROGRAM_GRADIENTS.length]
+                }));
+                setPrograms(mapped);
+            })
+            .catch(console.error);
+
+        // Fetch news
+        fetch('/api/news')
+            .then(res => res.json())
+            .then(data => setNews(data.filter((n: any) => n.is_featured).slice(0, 1))) // get latest 1 featured news
+            .catch(console.error);
+
+        // Fetch achievements
+        fetch('/api/achievements')
+            .then(res => res.json())
+            .then(data => setAchievements(data.filter((a: any) => a.is_featured).slice(0, 2))) // get latest 2 featured achievements
+            .catch(console.error);
+    }, []);
 
     const updateCarousel = useCallback(() => {
         const el = trackRef.current;
@@ -217,7 +270,7 @@ export default function Welcome(_props: PageProps) {
                             onScroll={updateCarousel}
                             className="flex gap-6 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-2 -mx-1 px-1"
                         >
-                            {JURUSAN.map((j) => (
+                            {programs.map((j) => (
                                 <article
                                     key={j.title}
                                     className="group relative rounded-lg overflow-hidden h-[380px] bg-gray-200 shadow-sm hover:shadow-xl transition-shadow duration-500 snap-start shrink-0 w-[85%] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
@@ -299,40 +352,47 @@ export default function Welcome(_props: PageProps) {
 
                     <div className="mt-10 grid lg:grid-cols-2 gap-6 items-start">
                         {/* Main news */}
+                        {news.length > 0 ? (
                         <article className="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
-                            <img src="/images/prestasi1.png" alt="Prestasi siswa SMK Negeri 1 Cimahi" className="w-full h-64 sm:h-80 object-cover" />
+                            {news[0].thumbnail && (
+                            <img src={news[0].thumbnail} alt={news[0].title} className="w-full h-64 sm:h-80 object-cover" />
+                            )}
                             <div className="bg-galaxy p-5">
                                 <h3 className="text-white text-sm font-bold leading-snug">
-                                    Perwakilan Tim CreatorHub Berhasil Meraih Juara 2 dalam Ajang Business Challenge HIPMI BERKARIA Challenge 2026 di Tingkat Kota Cimahi
+                                    <Link href={`/news/${news[0].id}`}>{news[0].title}</Link>
                                 </h3>
                                 <p className="mt-2.5 text-white/60 text-xs leading-relaxed">
-                                    Penghargaan tersebut diraih berkat kerja keras dan kekompakan tim dalam mengembangkan solusi digital kewirausahaan.
+                                    {news[0].summary}
                                 </p>
                             </div>
                         </article>
+                        ) : (
+                            <div className="rounded-lg border border-gray-200 shadow-sm bg-gray-50 h-64 flex items-center justify-center">
+                                <p className="text-gray-500">Belum ada berita utama.</p>
+                            </div>
+                        )}
 
                         {/* Side achievements */}
                         <div>
+                            {achievements.length > 0 ? (
                             <div className="grid sm:grid-cols-2 gap-3">
-                                {[
-                                    { t: 'Juara 1 INDORAMA Mechatronics Competition', s: 'Tingkat Prov. Jawa Barat 2023' },
-                                    { t: 'Juara 1 Olimpiade Siswa Indonesia bidang B. Inggris', s: 'LKP Astikom' },
-                                    { t: 'Juara 3 LKS Mobile Robotik', s: 'Tingkat Prov. Jawa Barat 2024' },
-                                    { t: 'Juara 2 ITENAS IOT and Science Project Competition', s: 'Tingkat Prov. Jawa Barat 2024' },
-                                ].map((p) => (
-                                    <div key={p.t} className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow">
+                                {achievements.map((p) => (
+                                    <div key={p.id} className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow">
                                         <span className="w-9 h-9 shrink-0 rounded-[10px] bg-galaxy flex items-center justify-center">
                                             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                                                 <path d="M6 2h12v2h4v3a5 5 0 01-5 5h-.42A6 6 0 0113 15.92V18h4v4H7v-4h4v-2.08A6 6 0 017.42 12H7a5 5 0 01-5-5V4h4V2zm0 4H4v1a3 3 0 003 3V6zm12 0v4a3 3 0 003-3V6h-3z" />
                                             </svg>
                                         </span>
                                         <div>
-                                            <p className="text-xs font-bold text-galaxy leading-tight">{p.t}</p>
-                                            <p className="text-[11px] text-gray-500 mt-0.5">{p.s}</p>
+                                            <p className="text-xs font-bold text-galaxy leading-tight">{p.title}</p>
+                                            <p className="text-[11px] text-gray-500 mt-0.5">{p.level} - {p.rank}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 mb-4">Belum ada pencapaian.</p>
+                            )}
 
                             <div className="mt-4 border border-gray-200 rounded-lg p-5 bg-white">
                                 <p className="text-sm font-bold text-galaxy mb-3">Prestasi lainnya</p>
