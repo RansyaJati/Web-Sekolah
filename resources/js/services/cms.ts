@@ -13,7 +13,31 @@ export interface Paginated<T> {
     data: T[];
     current_page: number;
     last_page: number;
+    per_page: number;
     total: number;
+}
+
+export interface NewsDetailDTO extends NewsDTO {
+    content: string;
+}
+
+export interface ProgramDetailDTO extends ProgramDTO {
+    competencies: string[] | null;
+    career_prospects: string[] | null;
+}
+
+export interface SiteProfile {
+    school_name?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+}
+
+export interface ProfilSekolah {
+    visi?: string;
+    misi?: string[];
+    sambutan?: string;
+    sejarah_singkat?: string;
 }
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
@@ -214,5 +238,36 @@ export const cmsService = {
     async getSettingsBatch<T extends Record<string, unknown>>(keys: string[]): Promise<Partial<T>> {
         const json = await getJSON<Partial<T>>('/api/settings', { keys: keys.join(',') });
         return json ?? {};
+    },
+
+    /** Server-side paginated news (category tabs + search + page). */
+    async listNews(params: {
+        page?: number;
+        perPage?: number;
+        category?: string;
+        search?: string;
+        status?: string;
+    } = {}): Promise<Paginated<NewsDTO>> {
+        const json = await getJSON<Paginated<NewsDTO>>(
+            '/api/news',
+            {
+                per_page: params.perPage ?? 9,
+                page: params.page ?? 1,
+                category: params.category,
+                search: params.search,
+                status: params.status ?? 'Published',
+            },
+            { cache: !params.search && (params.page ?? 1) === 1 },
+        );
+        if (Array.isArray(json)) return { data: json, current_page: 1, last_page: 1, per_page: json.length, total: json.length };
+        return json;
+    },
+
+    async getNewsDetail(id: string | number): Promise<NewsDetailDTO> {
+        return getJSON<NewsDetailDTO>(`/api/news/${id}`, {}, { cache: false });
+    },
+
+    async getProgramDetail(id: string | number): Promise<ProgramDetailDTO> {
+        return getJSON<ProgramDetailDTO>(`/api/programs/${id}`);
     },
 };

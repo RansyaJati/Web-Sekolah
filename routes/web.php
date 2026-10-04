@@ -34,6 +34,30 @@ Route::get('/career-center', function () {
     return Inertia::render('CareerCenter');
 })->name('career-center');
 
+Route::get('/tentang', function () {
+    return Inertia::render('Tentang');
+})->name('tentang');
+
+Route::get('/informasi', function () {
+    return Inertia::render('Informasi');
+})->name('informasi');
+
+Route::get('/berita/{id}', function () {
+    return Inertia::render('BeritaDetail');
+})->name('berita.detail');
+
+Route::get('/program-keahlian', function () {
+    return Inertia::render('ProgramKeahlian');
+})->name('program-keahlian');
+
+Route::get('/program-keahlian/{id}', function () {
+    return Inertia::render('ProgramDetail');
+})->name('program-keahlian.detail');
+
+Route::get('/kontak', function () {
+    return Inertia::render('Kontak');
+})->name('kontak');
+
 Route::post('/api/chat', [ChatController::class, 'chat'])
     ->middleware('throttle:20,1')
     ->name('api.chat');
@@ -51,6 +75,7 @@ Route::prefix('api')->group(function () {
     Route::get('/news/{id}',      [NewsController::class, 'show']);
     Route::get('/achievements',          [AchievementController::class, 'index']);
     Route::get('/programs',          [ProgramController::class, 'index']);
+    Route::get('/programs/{id}',      [ProgramController::class, 'show']);
     Route::get('/alumni',          [AlumniController::class, 'index']);
     Route::get('/products',          [ProductController::class, 'index']);
     Route::get('/jobs',          [JobVacancyController::class, 'index']);

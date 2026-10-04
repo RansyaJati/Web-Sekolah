@@ -25,6 +25,11 @@ class ProgramController extends Controller
         return response()->json($query->limit($limit)->get());
     }
 
+    public function show($id)
+    {
+        return response()->json(Program::findOrFail($id));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

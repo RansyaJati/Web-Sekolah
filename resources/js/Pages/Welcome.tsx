@@ -361,7 +361,7 @@ export default function Welcome(_props: PageProps) {
                             )}
                             <div className="bg-galaxy p-5">
                                 <h3 className="text-white text-sm font-bold leading-snug">
-                                    <Link href={`/news/${news[0].id}`}>{news[0].title}</Link>
+                                    <Link href={`/berita/${news[0].id}`}>{news[0].title}</Link>
                                 </h3>
                                 <p className="mt-2.5 text-white/60 text-xs leading-relaxed">
                                     {news[0].summary}

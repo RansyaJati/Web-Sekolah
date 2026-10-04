@@ -22,6 +22,23 @@ class SettingSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'key' => 'profil_sekolah',
+                'value' => json_encode([
+                    'visi' => 'Menghadirkan pendidikan vokasi unggulan yang menghasilkan SDM bermutu, kompeten, dan berdaya saing tinggi di tingkat nasional maupun internasional.',
+                    'misi' => [
+                        'Menyelenggarakan pendidikan vokasi berbasis kurikulum selaras industri melalui teaching factory.',
+                        'Mengembangkan kompetensi pendidik dan tenaga kependidikan secara berkelanjutan.',
+                        'Menanamkan karakter, disiplin, dan budaya kerja industri pada peserta didik.',
+                        'Memperluas kemitraan dengan dunia usaha, dunia industri, dan perguruan tinggi.',
+                        'Mengoptimalkan layanan BLUD dan Bursa Kerja Khusus untuk kemandirian dan keterserapan lulusan.',
+                    ],
+                    'sambutan' => 'Selamat datang di website resmi SMK Negeri 1 Cimahi. Sebagai SMK unggulan dan Badan Layanan Umum Daerah (BLUD), kami berkomitmen menghadirkan pendidikan vokasi berstandar industri melalui 9 program keahlian, teaching factory, dan kemitraan erat dengan lebih dari 50 perusahaan. Mari bergabung dan tumbuh bersama kami menuju masa depan yang gemilang.',
+                    'sejarah_singkat' => 'SMK Negeri 1 Cimahi adalah sekolah menengah kejuruan negeri di Kota Cimahi, Jawa Barat, yang menyelenggarakan 9 program keahlian di bidang teknologi, industri, dan broadcasting. Berstatus Badan Layanan Umum Daerah (BLUD), sekolah mengintegrasikan pembelajaran dengan produk dan jasa teaching factory berstandar industri, serta menyalurkan lulusan melalui Bursa Kerja Khusus (BKK) dengan tingkat keterserapan kerja yang tinggi.',
+                ]),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'key' => 'ppdb_info',
                 'value' => json_encode([
                     'periode' => 'Tahun Ajaran 2026/2027',

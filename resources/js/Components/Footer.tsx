@@ -1,10 +1,22 @@
 import { Link } from '@inertiajs/react';
 
+const SUPPORTED_BY_LOGOS = [
+    { src: '/images/logo/1. LOGO JHIC 2.0.png', alt: 'JHIC 2.0' },
+    { src: '/images/logo/2. Logo Jagoan Hosting.png', alt: 'Jagoan Hosting' },
+    { src: '/images/logo/3. KOMDIGI.png', alt: 'KOMDIGI' },
+    { src: '/images/logo/4. Garuda Spark Full Color.png', alt: 'Garuda Spark' },
+    { src: '/images/logo/5. LOGO NGALUP.png', alt: 'NGALUP' },
+];
+
 const QUICK_LINKS = [
     { href: '/', label: 'Beranda' },
+    { href: '/tentang', label: 'Tentang Kami' },
+    { href: '/informasi', label: 'Informasi & Berita' },
+    { href: '/program-keahlian', label: 'Program Keahlian' },
     { href: '/ppdb', label: 'PPDB' },
     { href: '/produk-unggulan', label: 'Produk Unggulan' },
     { href: '/career-center', label: 'PKL & Career Center' },
+    { href: '/kontak', label: 'Kontak' },
 ];
 
 export default function Footer() {
@@ -87,6 +99,31 @@ export default function Footer() {
                                     <path d={social.icon} />
                                 </svg>
                             </a>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Supported By */}
+            <div className="border-t border-white/10">
+                <div className="max-w-container mx-auto px-6 lg:px-12 py-8">
+                    <p className="text-center text-xs font-semibold tracking-widest uppercase text-white/50 mb-5">
+                        Didukung Oleh
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+                        {SUPPORTED_BY_LOGOS.map((logo) => (
+                            <div
+                                key={logo.src}
+                                className="bg-white rounded-lg px-4 py-2 flex items-center justify-center"
+                            >
+                                <img
+                                    src={logo.src}
+                                    alt={logo.alt}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="h-9 sm:h-10 w-auto max-w-[140px] object-contain"
+                                />
+                            </div>
                         ))}
                     </div>
                 </div>
