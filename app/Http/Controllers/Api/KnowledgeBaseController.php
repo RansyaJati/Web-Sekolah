@@ -8,9 +8,25 @@ use Illuminate\Http\Request;
 
 class KnowledgeBaseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(KnowledgeBase::where('is_active', true)->orderBy('topic')->get());
+        // Chatbot retrieval: never dump full KB. Require ?limit and support ?category/?search.
+        $limit = min((int) $request->query('limit', 20), 50);
+
+        $query = KnowledgeBase::query()
+            ->when($request->has('active'), fn ($q) => $q->where('is_active', $request->boolean('active', true)))
+            ->when($request->query('category'), fn ($q, $c) => $q->where('category', $c))
+            ->when($request->query('search'), fn ($q, $s) => $q->where(function ($w) use ($s) {
+                $w->where('topic', 'like', "%{$s}%")->orWhere('content', 'like', "%{$s}%");
+            }))
+            ->orderBy('topic');
+
+        // Default to active-only when no explicit active filter given.
+        if (! $request->has('active')) {
+            $query->where('is_active', true);
+        }
+
+        return response()->json($query->limit($limit)->get(['id', 'topic', 'category', 'content']));
     }
 
     public function store(Request $request)

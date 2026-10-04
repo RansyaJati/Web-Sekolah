@@ -11,6 +11,10 @@ use App\Http\Controllers\Api\JobVacancyController;
 use App\Http\Controllers\Api\PartnerController;
 use App\Http\Controllers\Api\KnowledgeBaseController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\StatsController;
+use App\Http\Controllers\Api\ActivityLogController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\MediaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,68 +34,75 @@ Route::get('/career-center', function () {
     return Inertia::render('CareerCenter');
 })->name('career-center');
 
-Route::post('/api/chat', [ChatController::class, 'chat'])->name('api.chat');
+Route::post('/api/chat', [ChatController::class, 'chat'])
+    ->middleware('throttle:20,1')
+    ->name('api.chat');
 
 /*
 |--------------------------------------------------------------------------
 | CMS REST API Routes
 |--------------------------------------------------------------------------
-| JSON endpoints used by admin pages & public pages to read/write data.
+| Public GET endpoints serve the website. All mutations require an
+| authenticated session; successful mutations are recorded to activity_logs.
 */
 Route::prefix('api')->group(function () {
-    // Berita
+    // Public reads (used by the website; paginated/limited at query layer)
     Route::get('/news',           [NewsController::class, 'index']);
-    Route::post('/news',          [NewsController::class, 'store']);
     Route::get('/news/{id}',      [NewsController::class, 'show']);
-    Route::put('/news/{id}',      [NewsController::class, 'update']);
-    Route::delete('/news/{id}',   [NewsController::class, 'destroy']);
-
-    // Prestasi
     Route::get('/achievements',          [AchievementController::class, 'index']);
-    Route::post('/achievements',         [AchievementController::class, 'store']);
-    Route::put('/achievements/{id}',     [AchievementController::class, 'update']);
-    Route::delete('/achievements/{id}',  [AchievementController::class, 'destroy']);
-
-    // Program Keahlian
     Route::get('/programs',          [ProgramController::class, 'index']);
-    Route::post('/programs',         [ProgramController::class, 'store']);
-    Route::put('/programs/{id}',     [ProgramController::class, 'update']);
-    Route::delete('/programs/{id}',  [ProgramController::class, 'destroy']);
-
-    // Alumni
     Route::get('/alumni',          [AlumniController::class, 'index']);
-    Route::post('/alumni',         [AlumniController::class, 'store']);
-    Route::put('/alumni/{id}',     [AlumniController::class, 'update']);
-    Route::delete('/alumni/{id}',  [AlumniController::class, 'destroy']);
-
-    // Produk BLUD
     Route::get('/products',          [ProductController::class, 'index']);
-    Route::post('/products',         [ProductController::class, 'store']);
-    Route::put('/products/{id}',     [ProductController::class, 'update']);
-    Route::delete('/products/{id}',  [ProductController::class, 'destroy']);
-
-    // Lowongan Kerja BKK
     Route::get('/jobs',          [JobVacancyController::class, 'index']);
-    Route::post('/jobs',         [JobVacancyController::class, 'store']);
-    Route::put('/jobs/{id}',     [JobVacancyController::class, 'update']);
-    Route::delete('/jobs/{id}',  [JobVacancyController::class, 'destroy']);
-
-    // Mitra Industri
     Route::get('/partners',          [PartnerController::class, 'index']);
-    Route::post('/partners',         [PartnerController::class, 'store']);
-    Route::put('/partners/{id}',     [PartnerController::class, 'update']);
-    Route::delete('/partners/{id}',  [PartnerController::class, 'destroy']);
-
-    // Knowledge Base AI
     Route::get('/knowledge-base',          [KnowledgeBaseController::class, 'index']);
-    Route::post('/knowledge-base',         [KnowledgeBaseController::class, 'store']);
-    Route::put('/knowledge-base/{id}',     [KnowledgeBaseController::class, 'update']);
-    Route::delete('/knowledge-base/{id}',  [KnowledgeBaseController::class, 'destroy']);
-
-    // Settings
     Route::get('/settings',                [SettingController::class, 'index']);
     Route::get('/settings/{key}',          [SettingController::class, 'show']);
-    Route::post('/settings/{key}',         [SettingController::class, 'update']);
+
+    // Authenticated CMS endpoints (admin panel; session cookie, same-origin).
+    Route::middleware(['auth', 'log.activity'])->group(function () {
+        Route::post('/news',          [NewsController::class, 'store']);
+        Route::put('/news/{id}',      [NewsController::class, 'update']);
+        Route::delete('/news/{id}',   [NewsController::class, 'destroy']);
+
+        Route::post('/achievements',         [AchievementController::class, 'store']);
+        Route::put('/achievements/{id}',     [AchievementController::class, 'update']);
+        Route::delete('/achievements/{id}',  [AchievementController::class, 'destroy']);
+
+        Route::post('/programs',         [ProgramController::class, 'store']);
+        Route::put('/programs/{id}',     [ProgramController::class, 'update']);
+        Route::delete('/programs/{id}',  [ProgramController::class, 'destroy']);
+
+        Route::post('/alumni',         [AlumniController::class, 'store']);
+        Route::put('/alumni/{id}',     [AlumniController::class, 'update']);
+        Route::delete('/alumni/{id}',  [AlumniController::class, 'destroy']);
+
+        Route::post('/products',         [ProductController::class, 'store']);
+        Route::put('/products/{id}',     [ProductController::class, 'update']);
+        Route::delete('/products/{id}',  [ProductController::class, 'destroy']);
+
+        Route::post('/jobs',         [JobVacancyController::class, 'store']);
+        Route::put('/jobs/{id}',     [JobVacancyController::class, 'update']);
+        Route::delete('/jobs/{id}',  [JobVacancyController::class, 'destroy']);
+
+        Route::post('/partners',         [PartnerController::class, 'store']);
+        Route::put('/partners/{id}',     [PartnerController::class, 'update']);
+        Route::delete('/partners/{id}',  [PartnerController::class, 'destroy']);
+
+        Route::post('/knowledge-base',         [KnowledgeBaseController::class, 'store']);
+        Route::put('/knowledge-base/{id}',     [KnowledgeBaseController::class, 'update']);
+        Route::delete('/knowledge-base/{id}',  [KnowledgeBaseController::class, 'destroy']);
+
+        Route::post('/settings/{key}',         [SettingController::class, 'update']);
+
+        Route::get('/stats',                [StatsController::class, 'index']);
+        Route::get('/activity-logs',         [ActivityLogController::class, 'index']);
+        Route::get('/users',                 [UserController::class, 'index']);
+
+        Route::get('/media',                 [MediaController::class, 'index']);
+        Route::post('/media',                [MediaController::class, 'store']);
+        Route::delete('/media/{id}',         [MediaController::class, 'destroy']);
+    });
 });
 
 /*
@@ -109,9 +120,11 @@ Route::prefix('admin')->group(function () {
         return Inertia::render('Admin/Login');
     })->name('admin.login');
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    // CMS pages require a real authenticated session (see Admin/Login).
+    Route::middleware('auth')->group(function () {
+        Route::get('/dashboard', function () {
+            return Inertia::render('Admin/Dashboard');
+        })->name('admin.dashboard');
 
     Route::get('/news', function () {
         return Inertia::render('Admin/News/Index');
@@ -176,6 +189,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/settings', function () {
         return Inertia::render('Admin/Settings');
     })->name('admin.settings');
+    }); // end auth-protected CMS pages
 });
 
 Route::get('/dashboard', function () {

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Alumni extends Model
 {
+    protected $table = 'alumni';
+
     protected $fillable = [
         'name', 'graduation_year', 'program', 'current_affiliation',
         'achievement', 'testimonial', 'photo', 'is_featured',

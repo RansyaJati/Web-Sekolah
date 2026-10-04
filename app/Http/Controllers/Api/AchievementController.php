@@ -8,9 +8,22 @@ use Illuminate\Http\Request;
 
 class AchievementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Achievement::orderBy('year', 'desc')->get());
+        $perPage = (int) $request->query('per_page', 0);
+        $limit = min((int) $request->query('limit', 24), 100);
+
+        $query = Achievement::query()
+            ->when($request->has('featured'), fn ($q) => $q->where('is_featured', $request->boolean('featured')))
+            ->when($request->query('year'), fn ($q, $y) => $q->where('year', $y))
+            ->when($request->query('level'), fn ($q, $l) => $q->where('level', $l))
+            ->orderBy('year', 'desc');
+
+        if ($perPage > 0) {
+            return response()->json($query->paginate(min($perPage, 50)));
+        }
+
+        return response()->json($query->limit($limit)->get());
     }
 
     public function store(Request $request)

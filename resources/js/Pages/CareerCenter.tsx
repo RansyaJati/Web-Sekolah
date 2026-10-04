@@ -1,46 +1,33 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
 import { useState, useEffect } from 'react';
+import { cmsService, type JobDTO, type PartnerDTO } from '@/services/cms';
 import { CAREER_STATS, PKL_INFO, FAQ_CAREER } from '@/data/career';
-
-interface JobListing {
-    id: number;
-    title: string;
-    company: string;
-    location: string;
-    type: string;
-    category: string;
-    description: string;
-    posted_date: string;
-}
-
-interface IndustryPartner {
-    id: number;
-    name: string;
-    sector: string;
-    description: string;
-    partner_since: string | null;
-}
 
 export default function CareerCenter() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [jobFilter, setJobFilter] = useState('Semua');
-    
-    const [jobs, setJobs] = useState<JobListing[]>([]);
-    const [partners, setPartners] = useState<IndustryPartner[]>([]);
+
+    const [jobs, setJobs] = useState<JobDTO[]>([]);
+    const [partners, setPartners] = useState<PartnerDTO[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        Promise.all([
-            fetch('/api/jobs').then(r => r.json()),
-            fetch('/api/partners').then(r => r.json())
-        ])
-        .then(([jobsData, partnersData]) => {
-            setJobs(jobsData);
-            setPartners(partnersData);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+        let cancelled = false;
+        // DB filters expired vacancies + inactive records; limit at query layer.
+        Promise.all([cmsService.getJobs({ limit: 24 }), cmsService.getPartners()])
+            .then(([jobsData, partnersData]) => {
+                if (cancelled) return;
+                setJobs(jobsData);
+                setPartners(partnersData);
+            })
+            .catch(console.error)
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const jobCategories = ['Semua', ...Array.from(new Set(jobs.map((j) => j.category)))];
@@ -60,6 +47,8 @@ export default function CareerCenter() {
                     <img
                         src="/images/logosmk.png"
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="absolute right-10 bottom-10 w-72 h-72 object-contain opacity-20"
                         aria-hidden="true"
                     />

@@ -8,9 +8,21 @@ use Illuminate\Http\Request;
 
 class ProgramController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Program::orderBy('name')->get());
+        $perPage = (int) $request->query('per_page', 0);
+        $limit = min((int) $request->query('limit', 24), 100);
+
+        $query = Program::query()
+            ->when($request->has('active'), fn ($q) => $q->where('is_active', $request->boolean('active')))
+            ->when($request->has('featured'), fn ($q) => $q->where('is_featured', $request->boolean('featured')))
+            ->orderBy('name');
+
+        if ($perPage > 0) {
+            return response()->json($query->paginate(min($perPage, 50)));
+        }
+
+        return response()->json($query->limit($limit)->get());
     }
 
     public function store(Request $request)

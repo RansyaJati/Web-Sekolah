@@ -8,9 +8,31 @@ use Illuminate\Http\Request;
 
 class JobVacancyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(JobVacancy::orderBy('posted_date', 'desc')->get());
+        $perPage = (int) $request->query('per_page', 0);
+        $limit = min((int) $request->query('limit', 24), 100);
+
+        $query = JobVacancy::query()
+            ->when($request->has('active'), fn ($q) => $q->where('is_active', $request->boolean('active')))
+            ->when($request->query('category'), fn ($q, $c) => $q->where('category', $c))
+            ->when($request->query('type'), fn ($q, $t) => $q->where('type', $t))
+            // Hide expired vacancies at DB layer when requested (default for public).
+            ->when($request->boolean('hide_expired', true), fn ($q) => $q->where(function ($w) {
+                $w->whereNull('deadline_date')->orWhere('deadline_date', '>=', now()->toDateString());
+            }))
+            ->when($request->query('search'), fn ($q, $s) => $q->where(function ($w) use ($s) {
+                $w->where('title', 'like', "%{$s}%")
+                  ->orWhere('company', 'like', "%{$s}%")
+                  ->orWhere('description', 'like', "%{$s}%");
+            }))
+            ->orderBy('posted_date', 'desc');
+
+        if ($perPage > 0) {
+            return response()->json($query->paginate(min($perPage, 50)));
+        }
+
+        return response()->json($query->limit($limit)->get());
     }
 
     public function store(Request $request)

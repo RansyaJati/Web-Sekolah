@@ -11,6 +11,17 @@ class SettingSeeder extends Seeder
     {
         DB::table('settings')->insertOrIgnore([
             [
+                'key' => 'site_profile',
+                'value' => json_encode([
+                    'school_name' => 'SMK Negeri 1 Cimahi',
+                    'phone' => '(022) 6629683',
+                    'email' => 'info@smkn1cimahi.sch.id',
+                    'address' => 'Jl. Mahar Martanegara No.48, Utama, Kec. Cimahi Selatan, Kota Cimahi, Jawa Barat 40533',
+                ]),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'key' => 'ppdb_info',
                 'value' => json_encode([
                     'periode' => 'Tahun Ajaran 2026/2027',

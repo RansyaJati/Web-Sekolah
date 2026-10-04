@@ -9,10 +9,30 @@ use Illuminate\Support\Str;
 
 class NewsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $news = News::orderBy('published_at', 'desc')->get();
-        return response()->json($news);
+        // Pagination & filtering at query layer (never fetch-all then slice in browser).
+        $perPage = (int) $request->query('per_page', 0);
+        $limit = min((int) $request->query('limit', 50), 100);
+
+        $query = News::query()
+            ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->query('category'), fn ($q, $c) => $q->where('category', $c))
+            ->when($request->has('featured'), fn ($q) => $q->where('is_featured', $request->boolean('featured')))
+            ->when($request->query('search'), fn ($q, $s) => $q->where(function ($w) use ($s) {
+                $w->where('title', 'like', "%{$s}%")->orWhere('summary', 'like', "%{$s}%");
+            }))
+            ->orderBy('published_at', 'desc');
+
+        if ($perPage > 0) {
+            return response()->json($query->paginate(min($perPage, 50)));
+        }
+
+        // Select only columns needed by listings; content fetched via show().
+        return response()->json($query->limit($limit)->get([
+            'id', 'title', 'slug', 'category', 'thumbnail', 'summary',
+            'status', 'is_featured', 'published_at', 'author',
+        ]));
     }
 
     public function store(Request $request)

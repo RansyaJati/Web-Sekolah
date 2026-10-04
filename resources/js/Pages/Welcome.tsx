@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Navbar from '@/Components/Navbar';
 import Footer from '@/Components/Footer';
 import Chatbot from '@/Components/Chatbot';
+import { cmsService } from '@/services/cms';
 
 /* ── reveal on scroll ── */
 function useScrollReveal<T extends HTMLElement>(): [(node: T | null) => void, boolean] {
@@ -83,31 +84,32 @@ export default function Welcome(_props: PageProps) {
     const [achievements, setAchievements] = useState<AchievementItem[]>([]);
 
     useEffect(() => {
-        // Fetch programs
-        fetch('/api/programs')
-            .then(res => res.json())
-            .then(data => {
-                const mapped = data.map((p: any, i: number) => ({
-                    title: p.name,
-                    duration: p.duration,
-                    img: p.image,
-                    gradient: p.image ? '' : PROGRAM_GRADIENTS[i % PROGRAM_GRADIENTS.length]
-                }));
-                setPrograms(mapped);
+        let cancelled = false;
+
+        // Server-side filtering + limit (no fetch-all then slice in browser).
+        Promise.all([
+            cmsService.getPrograms({ active: true, limit: 9 }),
+            cmsService.getNews({ status: 'Published', featured: true, limit: 1 }),
+            cmsService.getAchievements({ featured: true, limit: 2 }),
+        ])
+            .then(([programData, newsData, achievementData]) => {
+                if (cancelled) return;
+                setPrograms(
+                    programData.map((p, i: number) => ({
+                        title: p.name,
+                        duration: p.duration,
+                        img: p.image,
+                        gradient: p.image ? '' : PROGRAM_GRADIENTS[i % PROGRAM_GRADIENTS.length],
+                    })),
+                );
+                setNews(newsData.slice(0, 1));
+                setAchievements(achievementData.slice(0, 2));
             })
             .catch(console.error);
 
-        // Fetch news
-        fetch('/api/news')
-            .then(res => res.json())
-            .then(data => setNews(data.filter((n: any) => n.is_featured).slice(0, 1))) // get latest 1 featured news
-            .catch(console.error);
-
-        // Fetch achievements
-        fetch('/api/achievements')
-            .then(res => res.json())
-            .then(data => setAchievements(data.filter((a: any) => a.is_featured).slice(0, 2))) // get latest 2 featured achievements
-            .catch(console.error);
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const updateCarousel = useCallback(() => {
@@ -276,7 +278,7 @@ export default function Welcome(_props: PageProps) {
                                     className="group relative rounded-lg overflow-hidden h-[380px] bg-gray-200 shadow-sm hover:shadow-xl transition-shadow duration-500 snap-start shrink-0 w-[85%] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                                 >
                                     {j.img ? (
-                                        <img src={j.img} alt={j.title} className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
+                                        <img src={j.img} alt={j.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
                                     ) : (
                                         <div className={`absolute inset-0 bg-gradient-to-b ${j.gradient}`}>
                                             <div className="absolute inset-0 flex items-center justify-center">
@@ -355,7 +357,7 @@ export default function Welcome(_props: PageProps) {
                         {news.length > 0 ? (
                         <article className="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
                             {news[0].thumbnail && (
-                            <img src={news[0].thumbnail} alt={news[0].title} className="w-full h-64 sm:h-80 object-cover" />
+                            <img src={news[0].thumbnail} alt={news[0].title} loading="lazy" decoding="async" className="w-full h-64 sm:h-80 object-cover" />
                             )}
                             <div className="bg-galaxy p-5">
                                 <h3 className="text-white text-sm font-bold leading-snug">

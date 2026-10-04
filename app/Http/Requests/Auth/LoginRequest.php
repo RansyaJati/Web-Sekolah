@@ -50,6 +50,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Block deactivated accounts even with valid credentials.
+        if (Auth::user()?->is_active === false) {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini telah dinonaktifkan. Hubungi super admin.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -96,6 +97,37 @@ PROMPT;
             ], 200);
         }
 
+        // Relevant retrieval: inject up to 5 matching KB rows instead of
+        // the whole knowledge base. DB failure must never break the chat.
+        $kbContext = '';
+        try {
+            $words = preg_split('/\s+/', mb_strtolower($validated['message'])) ?: [];
+            $keywords = array_values(array_unique(array_filter($words, fn ($w) => mb_strlen($w) > 3)));
+            $keywords = array_slice($keywords, 0, 8);
+
+            if (! empty($keywords)) {
+                $kbQuery = DB::table('knowledge_bases')
+                    ->select(['topic', 'content'])
+                    ->where('is_active', true);
+                $kbQuery->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $kw) {
+                        $q->orWhere('topic', 'like', "%{$kw}%")
+                          ->orWhere('content', 'like', "%{$kw}%");
+                    }
+                });
+                $rows = $kbQuery->limit(5)->get();
+
+                if ($rows->isNotEmpty()) {
+                    $lines = $rows->map(fn ($r) => "- {$r->topic}: {$r->content}")->implode("\n");
+                    $kbContext = "\n\nKonteks tambahan dari basis pengetahuan resmi (Admin/AI):\n{$lines}";
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('KB retrieval failed, continuing without context: ' . $e->getMessage());
+        }
+
+        $systemPrompt = $this->systemPrompt . $kbContext;
+
         try {
             // Build Gemini contents payload with optional history
             $contents = [];
@@ -124,7 +156,7 @@ PROMPT;
                 ->post($url, [
                     'system_instruction' => [
                         'parts' => [
-                            ['text' => $this->systemPrompt],
+                            ['text' => $systemPrompt],
                         ],
                     ],
                     'contents' => $contents,

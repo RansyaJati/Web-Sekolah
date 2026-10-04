@@ -1,27 +1,35 @@
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
-import { adminAuthService } from '@/services/admin/adminAuthService';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import type { PageProps } from '@/types';
 
 export default function AdminLogin() {
-    const [email, setEmail] = useState('admin@smkn1cimahi.sch.id');
-    const [password, setPassword] = useState('admin123');
+    const { auth } = usePage<PageProps>().props;
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrorMessage('');
-        setIsLoading(true);
+    const { data, setData, post, processing, errors } = useForm({
+        email: '',
+        password: '',
+        remember: false,
+    });
 
-        try {
-            await adminAuthService.login(email, password);
+    // Already logged in -> straight to the CMS dashboard.
+    useEffect(() => {
+        if (auth?.user) {
             window.location.href = '/admin/dashboard';
-        } catch (err: unknown) {
-            setErrorMessage(err instanceof Error ? err.message : 'Gagal login.');
-            setIsLoading(false);
         }
+    }, [auth]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Real session authentication via Laravel Breeze (POST /login).
+        post('/login', {
+            onSuccess: () => {
+                window.location.href = '/admin/dashboard';
+            },
+        });
     };
+
+    const errorMessage = errors.email || errors.password || '';
 
     return (
         <div className="min-h-screen bg-milky-way flex items-center justify-center p-4 antialiased">
@@ -66,8 +74,9 @@ export default function AdminLogin() {
                         <input
                             type="email"
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            autoComplete="username"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
                             placeholder="nama@smkn1cimahi.sch.id"
                             className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary focus:ring-1 focus:ring-planetary"
                         />
@@ -81,8 +90,9 @@ export default function AdminLogin() {
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                autoComplete="current-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
                                 placeholder="••••••••"
                                 className="w-full text-xs px-3.5 py-2.5 pr-10 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary focus:ring-1 focus:ring-planetary"
                             />
@@ -108,10 +118,10 @@ export default function AdminLogin() {
 
                     <button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={processing}
                         className="w-full py-2.5 px-4 bg-planetary hover:bg-galaxy text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                        {isLoading ? (
+                        {processing ? (
                             <>
                                 <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 <span>Memverifikasi...</span>

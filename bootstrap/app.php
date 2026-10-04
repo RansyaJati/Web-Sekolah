@@ -20,6 +20,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
+
+        $middleware->alias([
+            'log.activity' => \App\Http\Middleware\LogActivity::class,
+        ]);
+
+        // Guests hitting /admin/* go to the CMS login, not the default /login.
+        $middleware->redirectGuestsTo(function (Request $request): string {
+            if ($request->is('admin/*')) {
+                return route('admin.login');
+            }
+
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

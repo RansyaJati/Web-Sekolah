@@ -1,6 +1,7 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
 import { useState, useEffect } from 'react';
+import { cmsService } from '@/services/cms';
 
 export default function PPDB() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -13,22 +14,35 @@ export default function PPDB() {
     const [faqList, setFaqList] = useState<any[]>([]);
 
     useEffect(() => {
-        Promise.all([
-            fetch('/api/settings/ppdb_info').then(r => r.json()),
-            fetch('/api/settings/ppdb_jalur').then(r => r.json()),
-            fetch('/api/settings/ppdb_jadwal').then(r => r.json()),
-            fetch('/api/settings/ppdb_syarat').then(r => r.json()),
-            fetch('/api/settings/ppdb_faq').then(r => r.json())
-        ])
-        .then(([infoData, jalurData, jadwalData, syaratData, faqData]) => {
-            if (infoData && infoData.periode) setInfo(infoData);
-            if (Array.isArray(jalurData)) setJalurList(jalurData);
-            if (Array.isArray(jadwalData)) setJadwalList(jadwalData);
-            if (Array.isArray(syaratData)) setSyaratList(syaratData);
-            if (Array.isArray(faqData)) setFaqList(faqData);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+        let cancelled = false;
+
+        // Single batch request instead of 5 parallel /api/settings/* calls.
+        cmsService
+            .getSettingsBatch<{
+                ppdb_info: { periode: string; status: string; link_portal: string };
+                ppdb_jalur: any[];
+                ppdb_jadwal: any[];
+                ppdb_syarat: any[];
+                ppdb_faq: any[];
+            }>(['ppdb_info', 'ppdb_jalur', 'ppdb_jadwal', 'ppdb_syarat', 'ppdb_faq'])
+            .then((data) => {
+                if (cancelled) return;
+                if (data.ppdb_info && (data.ppdb_info as any).periode) {
+                    setInfo(data.ppdb_info as any);
+                }
+                if (Array.isArray(data.ppdb_jalur)) setJalurList(data.ppdb_jalur);
+                if (Array.isArray(data.ppdb_jadwal)) setJadwalList(data.ppdb_jadwal);
+                if (Array.isArray(data.ppdb_syarat)) setSyaratList(data.ppdb_syarat);
+                if (Array.isArray(data.ppdb_faq)) setFaqList(data.ppdb_faq);
+            })
+            .catch(console.error)
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     return (

@@ -1,32 +1,30 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
 import { useState, useEffect } from 'react';
+import { cmsService, type ProductDTO } from '@/services/cms';
 import { BLUD_INFO } from '@/data/products';
-
-interface Product {
-    id: number;
-    name: string;
-    category: string;
-    description: string;
-    image: string | null;
-    features: string[] | null;
-    price: string | null;
-    is_available: boolean;
-}
 
 const PRODUCT_CATEGORIES = ['Semua', 'Teknologi', 'Elektronika', 'Multimedia', 'Jasa'];
 
 export default function ProdukUnggulan() {
     const [activeCategory, setActiveCategory] = useState('Semua');
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<ProductDTO[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/products')
-            .then((r) => r.json())
-            .then((data) => setProducts(data))
+        let cancelled = false;
+        cmsService
+            .getProducts({ limit: 24 })
+            .then((data) => {
+                if (!cancelled) setProducts(data);
+            })
             .catch(console.error)
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const filteredProducts =
