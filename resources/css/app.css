@@ -6,4 +6,42 @@
     html {
         scroll-behavior: smooth;
     }
+
+    :root {
+        --color-galaxy: #081F5C;
+        --color-planetary: #334EAC;
+        --color-universe: #7096D1;
+        --color-venus: #BAD6EB;
+        --color-sky: #D0E3FF;
+        --color-meteor: #F7F2EB;
+        --color-milky-way: #FFF9F0;
+
+        --font-display: 'Merriweather', Georgia, serif;
+        --font-body: 'DM Sans', system-ui, sans-serif;
+
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+        --radius-pill: 999px;
+
+        --container-width: 1280px;
+    }
+}
+
+@layer utilities {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 }

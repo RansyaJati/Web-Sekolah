@@ -13,7 +13,27 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['"DM Sans"', ...defaultTheme.fontFamily.sans],
+                display: ['"Merriweather"', 'Georgia', 'serif'],
+            },
+            colors: {
+                galaxy: '#081F5C',
+                planetary: '#334EAC',
+                universe: '#7096D1',
+                venus: '#BAD6EB',
+                sky: '#D0E3FF',
+                meteor: '#F7F2EB',
+                'milky-way': '#FFF9F0',
+            },
+            borderRadius: {
+                sm: '6px',
+                DEFAULT: '10px',
+                md: '12px',
+                lg: '16px',
+                xl: '24px',
+            },
+            maxWidth: {
+                container: '1280px',
             },
         },
     },
