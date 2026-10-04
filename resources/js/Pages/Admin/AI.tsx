@@ -1,65 +1,72 @@
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { adminApi } from '@/services/adminApi';
 
 interface KnowledgeItem {
-    id: string;
+    id: number;
     topic: string;
-    category: 'Jurusan' | 'PPDB' | 'BLUD' | 'BKK' | 'Prestasi' | 'Sekolah';
+    category: string;
     content: string;
-    isActive: boolean;
+    is_active: boolean;
 }
 
-const INITIAL_KB: KnowledgeItem[] = [
-    {
-        id: 'kb-1',
-        topic: 'Daftar 9 Program Keahlian Unggulan',
-        category: 'Jurusan',
-        content: 'RPL (3 Tahun), TOI (3 Tahun), Broadcast/PSPT (3 Tahun), Mekatronika (3 Tahun), TEI (3 Tahun), TEK (3 Tahun), IOP (4 Tahun), TPTU (3 Tahun), SIJA (4 Tahun).',
-        isActive: true
-    },
-    {
-        id: 'kb-2',
-        topic: 'Jalur dan Kuota PPDB 2026/2027',
-        category: 'PPDB',
-        content: 'Zonasi (50%), Prestasi Akademik/Kejuaraan (30%), Afirmasi KETM (15%), Perpindahan Tugas Orang Tua (5%). Pendaftaran 100% online gratis.',
-        isActive: true
-    },
-    {
-        id: 'kb-3',
-        topic: 'Praktik Kerja Lapangan (PKL) & Bursa Kerja',
-        category: 'BKK',
-        content: 'PKL berlangsung 3-6 bulan untuk kelas XI dan XII. Memiliki 50+ mitra industri termasuk Telkom, Schneider, LEN, Daikin, INTI, dan Biznet. Serapan kerja alumni mencapai 85%.',
-        isActive: true
-    },
-    {
-        id: 'kb-4',
-        topic: 'Produk BLUD Teaching Factory',
-        category: 'BLUD',
-        content: 'IoT Development Kit, Perakitan PCB, Jasa Pembuatan Video Broadcast, Panel Kontrol PLC Otomasi, Servis AC TPTU, Instalasi Jaringan SIJA.',
-        isActive: true
-    }
-];
+const CATEGORIES = ['Sekolah', 'Jurusan', 'PPDB', 'BLUD', 'BKK', 'Prestasi'];
 
 export default function AdminAI() {
-    const [kbList, setKbList] = useState<KnowledgeItem[]>(INITIAL_KB);
+    const [kbList, setKbList] = useState<KnowledgeItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [topic, setTopic] = useState('');
-    const [category, setCategory] = useState<'Jurusan' | 'PPDB' | 'BLUD' | 'BKK' | 'Prestasi' | 'Sekolah'>('Sekolah');
+    const [category, setCategory] = useState('Sekolah');
     const [content, setContent] = useState('');
+    const [saving, setSaving] = useState(false);
 
-    const handleSave = (e: React.FormEvent) => {
+    const fetchKb = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const data = await adminApi.get<KnowledgeItem[] | { data: KnowledgeItem[] }>('/api/knowledge-base?limit=50');
+            setKbList(Array.isArray(data) ? data : data.data);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Gagal memuat knowledge base.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchKb();
+    }, []);
+
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newItem: KnowledgeItem = {
-            id: 'kb-' + Date.now(),
-            topic,
-            category,
-            content,
-            isActive: true
-        };
-        setKbList([newItem, ...kbList]);
-        setModalOpen(false);
-        setTopic('');
-        setContent('');
+        setSaving(true);
+        try {
+            const created = await adminApi.post<KnowledgeItem>('/api/knowledge-base', {
+                topic,
+                category,
+                content,
+                is_active: true,
+            });
+            setKbList([created, ...kbList]);
+            setModalOpen(false);
+            setTopic('');
+            setContent('');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Gagal menyimpan.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        try {
+            await adminApi.del(`/api/knowledge-base/${id}`);
+            setKbList(kbList.filter((k) => k.id !== id));
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Gagal menghapus.');
+        }
     };
 
     return (
@@ -91,37 +98,48 @@ export default function AdminAI() {
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-xs font-semibold text-green-700">Guardrails Aktif (Strict SMK Only)</span>
+                    <span className="text-xs font-semibold text-green-700">{kbList.length} fakta aktif terindeks</span>
                 </div>
             </div>
 
-            {/* List Knowledge */}
-            <div className="space-y-4">
-                {kbList.map((item) => (
-                    <div key={item.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div className="space-y-1.5 flex-1">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky/40 text-planetary">
-                                    {item.category}
-                                </span>
-                                <span className="text-xs font-bold text-galaxy">{item.topic}</span>
+            {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{error}</div>
+            )}
+
+            {loading ? (
+                <div className="text-center py-12 text-xs text-gray-400">Memuat knowledge base...</div>
+            ) : kbList.length === 0 ? (
+                <div className="text-center py-12 text-xs text-gray-400 bg-white rounded-xl border border-gray-200">
+                    Belum ada fakta. Tambahkan pengetahuan pertama agar SAPA menjawab berbasis data.
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {kbList.map((item) => (
+                        <div key={item.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            <div className="space-y-1.5 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky/40 text-planetary">
+                                        {item.category}
+                                    </span>
+                                    <span className="text-xs font-bold text-galaxy">{item.topic}</span>
+                                </div>
+                                <p className="text-xs text-gray-600 leading-relaxed max-w-3xl">{item.content}</p>
                             </div>
-                            <p className="text-xs text-gray-600 leading-relaxed max-w-3xl">{item.content}</p>
+                            <div className="flex items-center gap-3 shrink-0">
+                                <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded">
+                                    Terindeks
+                                </span>
+                                <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className="text-xs text-red-600 hover:text-red-700 font-semibold"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                            <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded">
-                                Terindeks
-                            </span>
-                            <button
-                                onClick={() => setKbList(kbList.filter((k) => k.id !== item.id))}
-                                className="text-xs text-red-600 hover:text-red-700 font-semibold"
-                            >
-                                Hapus
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* Modal Tambah */}
             {modalOpen && (
@@ -148,15 +166,12 @@ export default function AdminAI() {
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Kategori</label>
                             <select
                                 value={category}
-                                onChange={(e) => setCategory(e.target.value as any)}
+                                onChange={(e) => setCategory(e.target.value)}
                                 className="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-planetary"
                             >
-                                <option value="Sekolah">Sekolah / Umum</option>
-                                <option value="Jurusan">Jurusan</option>
-                                <option value="PPDB">PPDB</option>
-                                <option value="BLUD">BLUD</option>
-                                <option value="BKK">BKK & PKL</option>
-                                <option value="Prestasi">Prestasi</option>
+                                {CATEGORIES.map((cat) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -182,9 +197,10 @@ export default function AdminAI() {
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-planetary text-white text-xs font-semibold rounded-lg hover:bg-galaxy"
+                                disabled={saving}
+                                className="px-4 py-2 bg-planetary text-white text-xs font-semibold rounded-lg hover:bg-galaxy disabled:opacity-50"
                             >
-                                Simpan ke Knowledge Base
+                                {saving ? 'Menyimpan...' : 'Simpan ke Knowledge Base'}
                             </button>
                         </div>
                     </form>

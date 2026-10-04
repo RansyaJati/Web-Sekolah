@@ -1,23 +1,40 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
-import { useState } from 'react';
-import {
-    CAREER_STATS,
-    JOB_LISTINGS,
-    INDUSTRY_PARTNERS,
-    PKL_INFO,
-    FAQ_CAREER,
-} from '@/data/career';
+import { useState, useEffect } from 'react';
+import { cmsService, type JobDTO, type PartnerDTO } from '@/services/cms';
+import { CAREER_STATS, PKL_INFO, FAQ_CAREER } from '@/data/career';
 
 export default function CareerCenter() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [jobFilter, setJobFilter] = useState('Semua');
 
-    const jobCategories = ['Semua', ...Array.from(new Set(JOB_LISTINGS.map((j) => j.category)))];
+    const [jobs, setJobs] = useState<JobDTO[]>([]);
+    const [partners, setPartners] = useState<PartnerDTO[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        // DB filters expired vacancies + inactive records; limit at query layer.
+        Promise.all([cmsService.getJobs({ limit: 24 }), cmsService.getPartners()])
+            .then(([jobsData, partnersData]) => {
+                if (cancelled) return;
+                setJobs(jobsData);
+                setPartners(partnersData);
+            })
+            .catch(console.error)
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const jobCategories = ['Semua', ...Array.from(new Set(jobs.map((j) => j.category)))];
     const filteredJobs =
         jobFilter === 'Semua'
-            ? JOB_LISTINGS
-            : JOB_LISTINGS.filter((j) => j.category === jobFilter);
+            ? jobs
+            : jobs.filter((j) => j.category === jobFilter);
 
     return (
         <PublicLayout
@@ -26,18 +43,15 @@ export default function CareerCenter() {
         >
             {/* ═══════════ HERO ═══════════ */}
             <section className="relative bg-galaxy overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.07]">
-                    <img
-                        src="/images/logosmk.png"
-                        alt=""
-                        className="absolute right-10 bottom-10 w-72 h-72 object-contain opacity-20"
-                        aria-hidden="true"
-                    />
-                </div>
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-10 left-20 w-96 h-96 rounded-full bg-planetary blur-3xl" />
-                    <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-universe blur-3xl" />
-                </div>
+                <img
+                    src="/images/bannerhubin.png"
+                    alt="Hubungan industri SMKN 1 Cimahi"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-28">
                     <div className="max-w-2xl">
                         <span className="inline-block text-sm font-medium text-venus mb-4">
@@ -130,7 +144,7 @@ export default function CareerCenter() {
 
                     {/* Filter */}
                     <div className="mt-10 flex flex-wrap justify-center gap-2">
-                        {jobCategories.map((cat) => (
+                        {!loading && jobCategories.map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => setJobFilter(cat)}
@@ -146,18 +160,15 @@ export default function CareerCenter() {
                     </div>
 
                     {/* Job Cards */}
+                    {loading ? (
+                        <div className="mt-10 text-center py-12 text-gray-500">Memuat lowongan kerja...</div>
+                    ) : (
                     <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredJobs.map((job) => (
                             <article
                                 key={job.id}
                                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-venus transition-all"
                             >
-                                {/* Company avatar */}
-                                <div className="w-12 h-12 rounded-[10px] bg-sky/30 flex items-center justify-center mb-4">
-                                    <span className="font-bold text-planetary text-sm">
-                                        {job.company.split(' ').slice(-1)[0].substring(0, 2).toUpperCase()}
-                                    </span>
-                                </div>
                                 <h3 className="font-semibold text-galaxy text-base">{job.title}</h3>
                                 <p className="text-sm text-planetary mt-1">{job.company}</p>
                                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">{job.description}</p>
@@ -177,7 +188,7 @@ export default function CareerCenter() {
 
                                 <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
                                     <span className="text-xs text-gray-400">
-                                        {new Date(job.postedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        {new Date(job.posted_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </span>
                                     <button className="text-sm font-semibold text-planetary hover:text-galaxy transition-colors flex items-center gap-1">
                                         Detail
@@ -189,6 +200,7 @@ export default function CareerCenter() {
                             </article>
                         ))}
                     </div>
+                    )}
                 </div>
             </section>
 
@@ -199,27 +211,27 @@ export default function CareerCenter() {
                         title="Mitra Industri"
                         description="Perusahaan yang bekerja sama dengan SMKN 1 Cimahi dalam pengembangan SDM."
                     />
+                    {loading ? (
+                        <div className="mt-12 text-center text-gray-500">Memuat mitra industri...</div>
+                    ) : (
                     <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {INDUSTRY_PARTNERS.map((partner) => (
+                        {partners.map((partner) => (
                             <div
                                 key={partner.id}
                                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                             >
-                                {/* Partner logo placeholder */}
-                                <div className="w-14 h-14 rounded-lg bg-sky/30 flex items-center justify-center mb-4">
-                                    <span className="font-bold text-planetary text-lg">
-                                        {partner.name.split(' ').slice(-1)[0].charAt(0)}
-                                    </span>
-                                </div>
                                 <h3 className="font-semibold text-galaxy text-base">{partner.name}</h3>
                                 <span className="inline-block text-xs font-medium text-planetary bg-sky/30 px-2.5 py-0.5 rounded-full mt-2">
                                     {partner.sector}
                                 </span>
                                 <p className="mt-3 text-sm text-gray-500 leading-relaxed">{partner.description}</p>
-                                <p className="mt-3 text-xs text-gray-400">Mitra sejak {partner.partnerSince}</p>
+                                {partner.partner_since && (
+                                    <p className="mt-3 text-xs text-gray-400">Mitra sejak {partner.partner_since}</p>
+                                )}
                             </div>
                         ))}
                     </div>
+                    )}
                 </div>
             </section>
 

@@ -1,15 +1,36 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
-import { useState } from 'react';
-import { PRODUCTS, PRODUCT_CATEGORIES, BLUD_INFO } from '@/data/products';
+import { useState, useEffect } from 'react';
+import { cmsService, type ProductDTO } from '@/services/cms';
+import { BLUD_INFO } from '@/data/products';
+
+const PRODUCT_CATEGORIES = ['Semua', 'Teknologi', 'Elektronika', 'Multimedia', 'Jasa'];
 
 export default function ProdukUnggulan() {
     const [activeCategory, setActiveCategory] = useState('Semua');
+    const [products, setProducts] = useState<ProductDTO[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        cmsService
+            .getProducts({ limit: 24 })
+            .then((data) => {
+                if (!cancelled) setProducts(data);
+            })
+            .catch(console.error)
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const filteredProducts =
         activeCategory === 'Semua'
-            ? PRODUCTS
-            : PRODUCTS.filter((p) => p.category === activeCategory);
+            ? products
+            : products.filter((p) => p.category === activeCategory);
 
     return (
         <PublicLayout
@@ -18,10 +39,15 @@ export default function ProdukUnggulan() {
         >
             {/* ═══════════ HERO ═══════════ */}
             <section className="relative bg-galaxy overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-20 right-20 w-80 h-80 rounded-full bg-universe blur-3xl" />
-                    <div className="absolute -bottom-10 left-10 w-96 h-96 rounded-full bg-planetary blur-3xl" />
-                </div>
+                <img
+                    src="/images/jasa.jpg"
+                    alt="Produk dan jasa unggulan SMKN 1 Cimahi"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover anim-hero-settle"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-28">
                     <div className="max-w-2xl">
                         <span className="inline-block text-sm font-medium text-venus mb-4">
@@ -85,6 +111,9 @@ export default function ProdukUnggulan() {
                     </div>
 
                     {/* Product Grid */}
+                    {loading ? (
+                        <div className="mt-10 text-center py-12 text-gray-500">Memuat produk...</div>
+                    ) : (
                     <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredProducts.map((product) => (
                             <article
@@ -111,7 +140,7 @@ export default function ProdukUnggulan() {
 
                                     {/* Features */}
                                     <div className="mt-4 flex flex-wrap gap-1.5">
-                                        {product.features.slice(0, 3).map((f) => (
+                                        {(product.features || []).slice(0, 3).map((f) => (
                                             <span key={f} className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded">
                                                 {f}
                                             </span>
@@ -137,6 +166,7 @@ export default function ProdukUnggulan() {
                             </article>
                         ))}
                     </div>
+                    )}
 
                     {filteredProducts.length === 0 && (
                         <div className="mt-10 text-center py-12">

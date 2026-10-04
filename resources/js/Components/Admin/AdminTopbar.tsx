@@ -1,21 +1,22 @@
-import { useState, useEffect } from 'react';
-import { adminAuthService, AdminUser } from '@/services/admin/adminAuthService';
+import { useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import type { PageProps } from '@/types';
 
 interface AdminTopbarProps {
     onToggleSidebar: () => void;
 }
 
 export default function AdminTopbar({ onToggleSidebar }: AdminTopbarProps) {
-    const [user, setUser] = useState<AdminUser | null>(null);
+    const { auth } = usePage<PageProps>().props;
+    const user = auth?.user ?? null;
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    useEffect(() => {
-        setUser(adminAuthService.getUser());
-    }, []);
-
     const handleLogout = () => {
-        adminAuthService.logout();
-        window.location.href = '/admin/login';
+        router.post('/logout', {}, {
+            onSuccess: () => {
+                window.location.href = '/admin/login';
+            },
+        });
     };
 
     return (
@@ -52,11 +53,11 @@ export default function AdminTopbar({ onToggleSidebar }: AdminTopbarProps) {
                         className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                         <div className="w-8 h-8 rounded-full bg-galaxy text-white flex items-center justify-center text-xs font-bold">
-                            {user?.name ? user.name.charAt(0) : 'A'}
+                            {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
                         </div>
                         <div className="text-left hidden sm:block">
                             <p className="text-xs font-semibold text-galaxy leading-tight">{user?.name || 'Admin'}</p>
-                            <p className="text-[10px] text-gray-500 leading-tight">{user?.role || 'Super Admin'}</p>
+                            <p className="text-[10px] text-gray-500 leading-tight">{user?.role || 'Admin'}</p>
                         </div>
                         <svg className="w-3.5 h-3.5 text-gray-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

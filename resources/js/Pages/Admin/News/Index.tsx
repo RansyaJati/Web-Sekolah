@@ -1,15 +1,47 @@
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { useState } from 'react';
-import { INITIAL_NEWS, NewsArticle } from '@/data/adminContent';
+import { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 
+interface NewsArticle {
+    id: number;
+    title: string;
+    slug: string;
+    category: 'Prestasi' | 'Kegiatan' | 'Pengumuman' | 'Akademik';
+    thumbnail: string | null;
+    summary: string;
+    content: string;
+    status: 'Published' | 'Draft' | 'Archived';
+    is_featured: boolean;
+    published_at: string;
+    author: string;
+}
+
 export default function AdminNewsIndex() {
-    const [news, setNews] = useState<NewsArticle[]>(INITIAL_NEWS);
+    const [news, setNews] = useState<NewsArticle[]>([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('Semua');
     const [deleteModal, setDeleteModal] = useState<NewsArticle | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const categories = ['Semua', 'Prestasi', 'Kegiatan', 'Pengumuman', 'Akademik'];
+
+    useEffect(() => {
+        fetchNews();
+    }, []);
+
+    const fetchNews = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/news');
+            const data = await res.json();
+            setNews(data);
+        } catch (err) {
+            console.error('Gagal memuat berita:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredNews = news.filter((item) => {
         const matchSearch = item.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -18,10 +50,20 @@ export default function AdminNewsIndex() {
         return matchSearch && matchCategory;
     });
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (!deleteModal) return;
-        setNews((prev) => prev.filter((n) => n.id !== deleteModal.id));
-        setDeleteModal(null);
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/news/${deleteModal.id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setNews((prev) => prev.filter((n) => n.id !== deleteModal.id));
+                setDeleteModal(null);
+            }
+        } catch (err) {
+            console.error('Gagal menghapus:', err);
+        } finally {
+            setDeleting(false);
+        }
     };
 
     return (
@@ -86,7 +128,13 @@ export default function AdminNewsIndex() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredNews.length === 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                                        Memuat data...
+                                    </td>
+                                </tr>
+                            ) : filteredNews.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
                                         Tidak ada artikel berita ditemukan.
@@ -97,15 +145,19 @@ export default function AdminNewsIndex() {
                                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <img
-                                                    src={item.thumbnail}
-                                                    alt=""
-                                                    className="w-12 h-10 object-cover rounded-md bg-gray-100 shrink-0"
-                                                />
+                                                {item.thumbnail ? (
+                                                    <img
+                                                        src={item.thumbnail}
+                                                        alt=""
+                                                        className="w-12 h-10 object-cover rounded-md bg-gray-100 shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className="w-12 h-10 rounded-md bg-gray-100 shrink-0" />
+                                                )}
                                                 <div className="min-w-0 max-w-md">
                                                     <div className="flex items-center gap-2">
                                                         <h4 className="font-semibold text-galaxy truncate">{item.title}</h4>
-                                                        {item.isFeatured && (
+                                                        {item.is_featured && (
                                                             <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
                                                                 Featured
                                                             </span>
@@ -130,7 +182,7 @@ export default function AdminNewsIndex() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                                            {item.publishedAt}
+                                            {item.published_at}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -184,9 +236,10 @@ export default function AdminNewsIndex() {
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="flex-1 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700"
+                                disabled={deleting}
+                                className="flex-1 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-60"
                             >
-                                Ya, Hapus
+                                {deleting ? 'Menghapus...' : 'Ya, Hapus'}
                             </button>
                         </div>
                     </div>

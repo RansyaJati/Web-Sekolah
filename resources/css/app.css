@@ -44,4 +44,58 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+
+    /* Scroll reveal (used via <Reveal/>) */
+    .reveal {
+        opacity: 0;
+        transform: translateY(26px);
+        transition:
+            opacity 0.65s ease,
+            transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+        will-change: opacity, transform;
+    }
+    .reveal-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Hero entrance */
+    @keyframes page-fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(22px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+    .anim-fade-up {
+        animation: page-fade-up 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    /* Slow cinematic settle for hero photography */
+    @keyframes hero-settle {
+        from {
+            transform: scale(1.08);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+    .anim-hero-settle {
+        animation: hero-settle 2.4s ease-out both;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    .anim-fade-up,
+    .anim-hero-settle {
+        animation: none;
+    }
 }

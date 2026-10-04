@@ -17,9 +17,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@smkn1cimahi.sch.id'],
+            [
+                'name' => 'Administrator',
+                'password' => 'admin123',
+                'role' => 'super_admin',
+                'is_active' => true,
+            ]
+        );
+
+        $this->call(CmsSeeder::class);
+        $this->call(SettingSeeder::class);
     }
 }
