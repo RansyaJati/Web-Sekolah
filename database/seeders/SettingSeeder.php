@@ -21,9 +21,14 @@ class SettingSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+        ]);
+
+        // Profil sekolah memakai updateOrInsert agar perubahan narasi ikut ter-update.
+        DB::table('settings')->updateOrInsert(
+            ['key' => 'profil_sekolah'],
             [
-                'key' => 'profil_sekolah',
                 'value' => json_encode([
+                    'kepala_sekolah' => 'Agus Priyatmono Nugroho, S.Pd., M.Si.',
                     'visi' => 'Menghadirkan pendidikan vokasi unggulan yang menghasilkan SDM bermutu, kompeten, dan berdaya saing tinggi di tingkat nasional maupun internasional.',
                     'misi' => [
                         'Menyelenggarakan pendidikan vokasi berbasis kurikulum selaras industri melalui teaching factory.',
@@ -37,7 +42,10 @@ class SettingSeeder extends Seeder
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
+            ]
+        );
+
+        DB::table('settings')->insertOrIgnore([
             [
                 'key' => 'ppdb_info',
                 'value' => json_encode([

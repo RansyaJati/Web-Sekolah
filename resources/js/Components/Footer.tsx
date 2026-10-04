@@ -22,9 +22,9 @@ const QUICK_LINKS = [
 export default function Footer() {
     return (
         <footer className="bg-galaxy text-white">
-            <div className="max-w-container mx-auto px-6 lg:px-12 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            <div className="max-w-container mx-auto px-6 lg:px-12 py-16 grid sm:grid-cols-2 lg:grid-cols-12 gap-10">
                 {/* Brand */}
-                <div>
+                <div className="lg:col-span-3">
                     <div className="flex items-center gap-2.5 mb-4">
                         <img
                             src="/images/logosmk.png"
@@ -41,7 +41,7 @@ export default function Footer() {
                 </div>
 
                 {/* Quick Links */}
-                <div>
+                <div className="lg:col-span-2">
                     <h4 className="text-sm font-semibold mb-5">Tautan Cepat</h4>
                     <ul className="space-y-2.5 text-sm text-white/80">
                         {QUICK_LINKS.map((l) => (
@@ -55,7 +55,7 @@ export default function Footer() {
                 </div>
 
                 {/* Contact */}
-                <div>
+                <div className="lg:col-span-3">
                     <h4 className="text-sm font-semibold mb-5">Kontak Kami</h4>
                     <ul className="space-y-3 text-sm leading-relaxed text-white/80">
                         <li className="flex gap-2.5">
@@ -81,17 +81,18 @@ export default function Footer() {
                 </div>
 
                 {/* Social Media */}
-                <div>
+                <div className="lg:col-span-1">
                     <h4 className="text-sm font-semibold mb-5">Media Sosial</h4>
                     <div className="flex gap-2.5">
                         {[
-                            { label: 'Facebook', icon: 'M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.5 1.6-1.5h1.3V4.9c-.3 0-1.1-.1-2-.1-2 0-3.4 1.2-3.4 3.5V11H8.5v3H11v7h2.5z' },
-                            { label: 'YouTube', icon: 'M21 8.2a2.5 2.5 0 00-1.8-1.7C17.7 6 12 6 12 6s-5.7 0-7.2.5A2.5 2.5 0 003 8.2 26 26 0 002.6 12 26 26 0 003 15.8a2.5 2.5 0 001.8 1.7c1.5.5 7.2.5 7.2.5s5.7 0 7.2-.5a2.5 2.5 0 001.8-1.7A26 26 0 0021.4 12 26 26 0 0021 8.2zM10 15V9l5.2 3L10 15z' },
-                            { label: 'Instagram', icon: 'M12 8.8A3.2 3.2 0 1012 15.2 3.2 3.2 0 0012 8.8zm0-2.1a5.3 5.3 0 110 10.6 5.3 5.3 0 010-10.6zm6.8-.3a1.2 1.2 0 11-2.4 0 1.2 1.2 0 012.4 0zM12 4.2c-2.5 0-2.9 0-3.9.1a5.2 5.2 0 00-1.7.3 3.5 3.5 0 00-2 2 5.2 5.2 0 00-.3 1.7c-.1 1-.1 1.4-.1 3.9s0 2.9.1 3.9a5.2 5.2 0 00.3 1.7 3.5 3.5 0 002 2 5.2 5.2 0 001.7.3c1 .1 1.4.1 3.9.1s2.9 0 3.9-.1a5.2 5.2 0 001.7-.3 3.5 3.5 0 002-2 5.2 5.2 0 00.3-1.7c.1-1 .1-1.4.1-3.9s0-2.9-.1-3.9a5.2 5.2 0 00-.3-1.7 3.5 3.5 0 00-2-2 5.2 5.2 0 00-1.7-.3c-1-.1-1.4-.1-3.9-.1z' },
+                            { label: 'YouTube', href: 'https://www.youtube.com/@SMKNEGERI1CIMAHIOFFICIAL', icon: 'M21 8.2a2.5 2.5 0 00-1.8-1.7C17.7 6 12 6 12 6s-5.7 0-7.2.5A2.5 2.5 0 003 8.2 26 26 0 002.6 12 26 26 0 003 15.8a2.5 2.5 0 001.8 1.7c1.5.5 7.2.5 7.2.5s5.7 0 7.2-.5a2.5 2.5 0 001.8-1.7A26 26 0 0021.4 12 26 26 0 0021 8.2zM10 15V9l5.2 3L10 15z' },
+                            { label: 'Instagram', href: 'https://www.instagram.com/stmnpbdg/', icon: 'M12 8.8A3.2 3.2 0 1012 15.2 3.2 3.2 0 0012 8.8zm0-2.1a5.3 5.3 0 110 10.6 5.3 5.3 0 010-10.6zm6.8-.3a1.2 1.2 0 11-2.4 0 1.2 1.2 0 012.4 0zM12 4.2c-2.5 0-2.9 0-3.9.1a5.2 5.2 0 00-1.7.3 3.5 3.5 0 00-2 2 5.2 5.2 0 00-.3 1.7c-.1 1-.1 1.4-.1 3.9s0 2.9.1 3.9a5.2 5.2 0 00.3 1.7 3.5 3.5 0 002 2 5.2 5.2 0 001.7.3c1 .1 1.4.1 3.9.1s2.9 0 3.9-.1a5.2 5.2 0 001.7-.3 3.5 3.5 0 002-2 5.2 5.2 0 00.3-1.7c.1-1 .1-1.4.1-3.9s0-2.9-.1-3.9a5.2 5.2 0 00-.3-1.7 3.5 3.5 0 00-2-2 5.2 5.2 0 00-1.7-.3c-1-.1-1.4-.1-3.9-.1z' },
                         ].map((social) => (
                             <a
                                 key={social.label}
-                                href="#"
+                                href={social.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={social.label}
                                 className="w-9 h-9 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                             >
@@ -101,6 +102,30 @@ export default function Footer() {
                             </a>
                         ))}
                     </div>
+                </div>
+
+                {/* Location Map */}
+                <div className="sm:col-span-2 lg:col-span-3">
+                    <h4 className="text-sm font-semibold mb-5">Lokasi Sekolah</h4>
+                    <div className="rounded-xl overflow-hidden border border-white/10">
+                        <iframe
+                            title="Peta lokasi SMK Negeri 1 Cimahi"
+                            src="https://maps.google.com/maps?q=SMK%20Negeri%201%20Cimahi%20Mahar%20Martanegara&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                            loading="lazy"
+                            className="w-full h-48"
+                        />
+                    </div>
+                    <a
+                        href="https://maps.google.com/?q=SMK+Negeri+1+Cimahi"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-white/70 hover:text-white transition-colors"
+                    >
+                        Buka di Google Maps
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                    </a>
                 </div>
             </div>
 

@@ -1,7 +1,38 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
+import Reveal from '@/Components/Reveal';
 import { useState, useEffect } from 'react';
 import { cmsService } from '@/services/cms';
+
+/** Distinct icon per jalur (fallback cycles by index). Galaxy/Planetary palette. */
+function jalurIcon(id: string, idx: number) {
+    const cls = 'w-6 h-6';
+    const icons: Record<string, React.ReactNode> = {
+        zonasi: (
+            <svg className={cls} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+            </svg>
+        ),
+        prestasi: (
+            <svg className={cls} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
+            </svg>
+        ),
+        afirmasi: (
+            <svg className={cls} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H4.5a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+            </svg>
+        ),
+        perpindahan: (
+            <svg className={cls} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" />
+            </svg>
+        ),
+    };
+    const fallback = [icons.zonasi, icons.prestasi, icons.afirmasi, icons.perpindahan];
+    return icons[id] ?? fallback[idx % fallback.length];
+}
 
 export default function PPDB() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -57,7 +88,7 @@ export default function PPDB() {
                     <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-planetary blur-3xl" />
                 </div>
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-28">
-                    <div className="max-w-2xl">
+                    <div className="max-w-2xl anim-fade-up">
                         <span className="inline-flex items-center gap-2 text-sm font-medium text-venus mb-4">
                             <span className="w-2 h-2 rounded-full bg-venus animate-pulse" />
                             {info.status || 'Memuat...'}
@@ -101,18 +132,44 @@ export default function PPDB() {
                                 description="Pilih jalur pendaftaran yang sesuai dengan kualifikasi dan kondisi calon peserta didik."
                             />
                             <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {jalurList.map((jalur, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="bg-milky-way p-6 rounded-2xl border border-gray-100 hover:border-planetary/30 transition-colors"
-                                    >
-                                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-5 text-planetary font-display text-xl font-bold">
-                                            {jalur.quota}
-                                        </div>
-                                        <h3 className="font-bold text-galaxy text-lg mb-2">{jalur.name}</h3>
-                                        <p className="text-sm text-gray-500 leading-relaxed">{jalur.description}</p>
-                                    </div>
-                                ))}
+                                {jalurList.map((jalur, idx) => {
+                                    const quotaValue = parseInt(String(jalur.quota), 10) || 0;
+                                    return (
+                                        <Reveal key={jalur.id ?? idx} delay={(idx % 4) * 90} className="h-full">
+                                            <div className="group relative bg-white p-6 rounded-2xl border border-gray-100 hover:border-planetary/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full">
+                                            {/* Watermark number */}
+                                            <span className="absolute -top-1 right-4 font-display text-[64px] leading-none font-bold text-galaxy/[0.06] select-none">
+                                                {String(idx + 1).padStart(2, '0')}
+                                            </span>
+
+                                            {/* Icon */}
+                                            <div className="w-12 h-12 rounded-xl bg-sky/30 text-planetary flex items-center justify-center mb-5 group-hover:bg-planetary group-hover:text-white transition-colors">
+                                                {jalurIcon(jalur.id ?? '', idx)}
+                                            </div>
+
+                                            <h3 className="font-bold text-galaxy text-lg leading-snug">{jalur.name}</h3>
+
+                                            {/* Quota */}
+                                            <div className="mt-4 flex items-end justify-between">
+                                                <span className="font-display text-3xl font-bold text-planetary">
+                                                    {jalur.quota}
+                                                </span>
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                                                    Kuota
+                                                </span>
+                                            </div>
+                                            <div className="mt-2 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                                                <div
+                                                    className="h-full rounded-full bg-gradient-to-r from-universe to-planetary transition-all duration-500"
+                                                    style={{ width: `${Math.min(100, Math.max(0, quotaValue))}%` }}
+                                                />
+                                            </div>
+
+                                            <p className="mt-4 text-sm text-gray-500 leading-relaxed">{jalur.description}</p>
+                                            </div>
+                                        </Reveal>
+                                    );
+                                })}
                             </div>
                         </div>
                     </section>
@@ -127,10 +184,9 @@ export default function PPDB() {
                             <div className="mt-12 max-w-4xl mx-auto">
                                 <div className="space-y-4">
                                     {jadwalList.map((tahap, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="group flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white p-5 lg:p-6 rounded-2xl border border-gray-100 hover:shadow-md hover:border-venus/30 transition-all"
-                                        >
+                                        <Reveal key={idx} delay={Math.min(idx, 4) * 70}>
+                                            <div className="group flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white p-5 lg:p-6 rounded-2xl border border-gray-100 hover:shadow-md hover:border-venus/30 transition-all"
+                                            >
                                             <div className="flex-shrink-0 w-12 h-12 rounded-full bg-sky/30 text-planetary font-bold text-lg flex items-center justify-center group-hover:bg-planetary group-hover:text-white transition-colors">
                                                 {tahap.step}
                                             </div>
@@ -143,7 +199,8 @@ export default function PPDB() {
                                                     {tahap.date}
                                                 </span>
                                             </div>
-                                        </div>
+                                            </div>
+                                        </Reveal>
                                     ))}
                                 </div>
                             </div>
@@ -168,7 +225,8 @@ export default function PPDB() {
                                 </div>
                                 <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6">
                                     {syaratList.map((group, idx) => (
-                                        <div key={idx} className="bg-milky-way p-6 lg:p-8 rounded-2xl border border-gray-100">
+                                        <Reveal key={idx} delay={(idx % 2) * 90}>
+                                        <div className="bg-milky-way p-6 lg:p-8 rounded-2xl border border-gray-100 h-full">
                                             <h3 className="font-bold text-galaxy text-lg mb-5 pb-3 border-b border-gray-200">
                                                 {group.category}
                                             </h3>
@@ -185,6 +243,7 @@ export default function PPDB() {
                                                 ))}
                                             </ul>
                                         </div>
+                                        </Reveal>
                                     ))}
                                 </div>
                             </div>
@@ -200,9 +259,8 @@ export default function PPDB() {
                             />
                             <div className="mt-12 max-w-3xl mx-auto space-y-3">
                                 {faqList.map((faq, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
+                                    <Reveal key={idx} delay={Math.min(idx, 3) * 60}>
+                                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
                                     >
                                         <button
                                             onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
@@ -232,6 +290,7 @@ export default function PPDB() {
                                             </p>
                                         </div>
                                     </div>
+                                    </Reveal>
                                 ))}
                             </div>
                         </div>

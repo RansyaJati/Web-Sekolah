@@ -1,5 +1,6 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
+import Reveal from '@/Components/Reveal';
 import { useEffect, useState } from 'react';
 import { cmsService, type SiteProfile } from '@/services/cms';
 
@@ -60,6 +61,7 @@ export default function Kontak() {
                     <div className="absolute -bottom-10 left-10 w-96 h-96 rounded-full bg-planetary blur-3xl" />
                 </div>
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-24">
+                    <div className="anim-fade-up">
                     <span className="inline-block text-sm font-medium text-venus mb-4">Hubungi Kami</span>
                     <h1 className="font-display text-white text-4xl sm:text-5xl leading-[1.1]">
                         Kontak Sekolah
@@ -67,6 +69,7 @@ export default function Kontak() {
                     <p className="mt-4 text-white/70 text-base max-w-lg leading-relaxed">
                         Ada pertanyaan seputar PPDB, program, atau kerja sama? Silakan hubungi kami.
                     </p>
+                    </div>
                 </div>
             </section>
 
@@ -74,7 +77,7 @@ export default function Kontak() {
             <section className="bg-milky-way py-16 lg:py-20">
                 <div className="max-w-container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-8 items-start">
                     {/* Info + jam layanan */}
-                    <div className="space-y-6">
+                    <Reveal className="space-y-6">
                         <div className="bg-white rounded-2xl border border-gray-200 p-7">
                             <SectionHeader title={profil.school_name} centered={false} />
                             <ul className="mt-5 space-y-4 text-sm text-gray-600">
@@ -131,10 +134,10 @@ export default function Kontak() {
                                 className="w-full h-72"
                             />
                         </div>
-                    </div>
+                    </Reveal>
 
                     {/* Form */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-7 lg:p-9 lg:sticky lg:top-24">
+                    <Reveal delay={120} className="bg-white rounded-2xl border border-gray-200 p-7 lg:p-9 lg:sticky lg:top-24">
                         <h3 className="font-bold text-galaxy text-lg">Kirim Pesan</h3>
                         <p className="mt-1 text-sm text-gray-500">
                             Pesan akan dibuka melalui aplikasi email Anda ke {profil.email}.
@@ -188,7 +191,7 @@ export default function Kontak() {
                                 Kirim via Email
                             </button>
                         </form>
-                    </div>
+                    </Reveal>
                 </div>
             </section>
         </PublicLayout>

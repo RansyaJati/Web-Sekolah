@@ -34,6 +34,7 @@ export interface SiteProfile {
 }
 
 export interface ProfilSekolah {
+    kepala_sekolah?: string;
     visi?: string;
     misi?: string[];
     sambutan?: string;

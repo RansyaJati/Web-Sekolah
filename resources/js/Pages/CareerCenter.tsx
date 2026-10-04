@@ -43,20 +43,15 @@ export default function CareerCenter() {
         >
             {/* ═══════════ HERO ═══════════ */}
             <section className="relative bg-galaxy overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.07]">
-                    <img
-                        src="/images/logosmk.png"
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute right-10 bottom-10 w-72 h-72 object-contain opacity-20"
-                        aria-hidden="true"
-                    />
-                </div>
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-10 left-20 w-96 h-96 rounded-full bg-planetary blur-3xl" />
-                    <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-universe blur-3xl" />
-                </div>
+                <img
+                    src="/images/bannerhubin.png"
+                    alt="Hubungan industri SMKN 1 Cimahi"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-28">
                     <div className="max-w-2xl">
                         <span className="inline-block text-sm font-medium text-venus mb-4">
@@ -174,12 +169,6 @@ export default function CareerCenter() {
                                 key={job.id}
                                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-venus transition-all"
                             >
-                                {/* Company avatar */}
-                                <div className="w-12 h-12 rounded-[10px] bg-sky/30 flex items-center justify-center mb-4">
-                                    <span className="font-bold text-planetary text-sm">
-                                        {job.company.split(' ').slice(-1)[0].substring(0, 2).toUpperCase()}
-                                    </span>
-                                </div>
                                 <h3 className="font-semibold text-galaxy text-base">{job.title}</h3>
                                 <p className="text-sm text-planetary mt-1">{job.company}</p>
                                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">{job.description}</p>
@@ -231,12 +220,6 @@ export default function CareerCenter() {
                                 key={partner.id}
                                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                             >
-                                {/* Partner logo placeholder */}
-                                <div className="w-14 h-14 rounded-lg bg-sky/30 flex items-center justify-center mb-4">
-                                    <span className="font-bold text-planetary text-lg">
-                                        {partner.name.split(' ').slice(-1)[0].charAt(0)}
-                                    </span>
-                                </div>
                                 <h3 className="font-semibold text-galaxy text-base">{partner.name}</h3>
                                 <span className="inline-block text-xs font-medium text-planetary bg-sky/30 px-2.5 py-0.5 rounded-full mt-2">
                                     {partner.sector}

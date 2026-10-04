@@ -88,15 +88,15 @@ class CmsSeeder extends Seeder
 
         // 3. Seed Program Keahlian
         $programs = [
-            ['Rekayasa Perangkat Lunak', 'RPL', 'Program 3 Tahun', '/images/rekayasaperangkatlunak.png'],
-            ['Teknik Otomasi Industri', 'TOI', 'Program 3 Tahun', '/images/teknikotomasiindustri.png'],
-            ['Produksi dan Siaran Program Televisi', 'PSPT', 'Program 3 Tahun', '/images/produksisiarandanprogramtelevisi.png'],
-            ['Teknik Mekatronika', 'TM', 'Program 3 Tahun', null],
-            ['Teknik Elektronika Industri', 'TEI', 'Program 3 Tahun', null],
-            ['Teknik Elektronika Komunikasi', 'TEK', 'Program 3 Tahun', null],
-            ['Instrumentasi dan Otomatisasi Proses', 'IOP', 'Program 4 Tahun', null],
-            ['Teknik Pendingin dan Tata Udara', 'TPTU', 'Program 3 Tahun', null],
-            ['Sistem Informatika, Jaringan, dan Aplikasi', 'SIJA', 'Program 4 Tahun', null],
+            ['Rekayasa Perangkat Lunak', 'RPL', 'Program 3 Tahun', '/images/jurusan/rpl.jpg'],
+            ['Teknik Otomasi Industri', 'TOI', 'Program 3 Tahun', '/images/jurusan/toi.jpg'],
+            ['Produksi dan Siaran Program Televisi', 'PSPT', 'Program 3 Tahun', '/images/jurusan/pspt.jpg'],
+            ['Teknik Mekatronika', 'TM', 'Program 3 Tahun', '/images/jurusan/meka.jpg'],
+            ['Teknik Elektronika Industri', 'TEI', 'Program 3 Tahun', '/images/jurusan/tei.jpg'],
+            ['Teknik Elektronika Komunikasi', 'TEK', 'Program 3 Tahun', '/images/jurusan/tek.jpg'],
+            ['Instrumentasi dan Otomatisasi Proses', 'IOP', 'Program 4 Tahun', '/images/jurusan/iop.jpg'],
+            ['Teknik Pendingin dan Tata Udara', 'TPTU', 'Program 3 Tahun', '/images/jurusan/tptu.jpg'],
+            ['Sistem Informatika, Jaringan, dan Aplikasi', 'SIJA', 'Program 4 Tahun', '/images/jurusan/sija.jpg'],
         ];
 
         foreach ($programs as $p) {

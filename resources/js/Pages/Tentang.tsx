@@ -1,10 +1,12 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
+import Reveal from '@/Components/Reveal';
 import { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { cmsService, type ProfilSekolah } from '@/services/cms';
 
 const FALLBACK: Required<ProfilSekolah> = {
+    kepala_sekolah: 'Agus Priyatmono Nugroho, S.Pd., M.Si.',
     visi: 'Menghadirkan pendidikan vokasi unggulan yang menghasilkan SDM bermutu, kompeten, dan berdaya saing tinggi di tingkat nasional maupun internasional.',
     misi: [
         'Menyelenggarakan pendidikan vokasi berbasis kurikulum selaras industri melalui teaching factory.',
@@ -63,12 +65,17 @@ export default function Tentang() {
         >
             {/* HERO */}
             <section className="relative bg-galaxy overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-20 right-20 w-80 h-80 rounded-full bg-universe blur-3xl" />
-                    <div className="absolute -bottom-10 left-10 w-96 h-96 rounded-full bg-planetary blur-3xl" />
-                </div>
+                <img
+                    src="/images/bannertentang.jpg"
+                    alt="Gedung SMK Negeri 1 Cimahi"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover anim-hero-settle"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-28">
-                    <div className="max-w-2xl">
+                    <div className="max-w-2xl anim-fade-up">
                         <span className="inline-block text-sm font-medium text-venus mb-4">Profil Sekolah</span>
                         <h1 className="font-display text-white text-4xl sm:text-5xl lg:text-[56px] leading-[1.1]">
                             Tentang SMKN<br />1 Cimahi
@@ -82,14 +89,18 @@ export default function Tentang() {
 
             {/* SAMBUTAN */}
             <section className="bg-white py-20 lg:py-24">
-                <div className="max-w-container mx-auto px-6 lg:px-12 grid lg:grid-cols-12 gap-10 items-start">
+                <Reveal className="max-w-container mx-auto px-6 lg:px-12 grid lg:grid-cols-12 gap-10 items-start">
                     <div className="lg:col-span-4">
                         <div className="bg-milky-way rounded-2xl border border-gray-100 p-8 text-center lg:sticky lg:top-24">
-                            <div className="w-24 h-24 rounded-full bg-galaxy text-white flex items-center justify-center mx-auto font-display text-3xl font-bold">
-                                S
-                            </div>
-                            <h3 className="mt-4 font-bold text-galaxy">Kepala Sekolah</h3>
-                            <p className="text-xs text-gray-500 mt-1">SMK Negeri 1 Cimahi</p>
+                            <img
+                                src="/images/kepsek.jpg"
+                                alt="Kepala SMK Negeri 1 Cimahi"
+                                loading="lazy"
+                                decoding="async"
+                                className="w-36 h-44 rounded-2xl object-cover object-top mx-auto shadow-md"
+                            />
+                            <h3 className="mt-4 font-bold text-galaxy">{profil.kepala_sekolah}</h3>
+                            <p className="text-xs text-gray-500 mt-1">Kepala SMK Negeri 1 Cimahi</p>
                         </div>
                     </div>
                     <div className="lg:col-span-8">
@@ -105,7 +116,7 @@ export default function Tentang() {
                             ))}
                         </div>
                     </div>
-                </div>
+                </Reveal>
             </section>
 
             {/* VISI MISI */}
@@ -115,18 +126,20 @@ export default function Tentang() {
                         title="Visi & Misi"
                         description="Arah dan komitmen SMKN 1 Cimahi sebagai institusi pendidikan vokasi unggulan."
                     />
-                    <div className="mt-12 max-w-3xl mx-auto bg-galaxy rounded-2xl p-8 lg:p-10 text-center">
+                    <Reveal className="mt-12 max-w-3xl mx-auto bg-galaxy rounded-2xl p-8 lg:p-10 text-center">
                         <p className="text-xs font-semibold tracking-widest uppercase text-venus mb-3">Visi</p>
                         <p className="font-display text-white text-xl sm:text-2xl leading-relaxed">{profil.visi}</p>
-                    </div>
+                    </Reveal>
                     <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
                         {profil.misi.map((m, i) => (
-                            <div key={i} className="bg-white rounded-xl border border-gray-200 p-6">
+                            <Reveal key={i} delay={(i % 3) * 90}>
+                            <div className="bg-white rounded-xl border border-gray-200 p-6 h-full">
                                 <span className="inline-flex w-9 h-9 rounded-full bg-sky/30 text-planetary font-bold text-sm items-center justify-center">
                                     {i + 1}
                                 </span>
                                 <p className="mt-3 text-sm text-gray-600 leading-relaxed">{m}</p>
                             </div>
+                            </Reveal>
                         ))}
                     </div>
                 </div>
@@ -140,11 +153,13 @@ export default function Tentang() {
                         description="Sarana praktik dan penunjang pembelajaran berstandar industri."
                     />
                     <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {FASILITAS.map((f) => (
-                            <div key={f.title} className="bg-milky-way p-6 rounded-2xl border border-gray-100">
+                        {FASILITAS.map((f, i) => (
+                            <Reveal key={f.title} delay={(i % 3) * 90}>
+                            <div className="bg-milky-way p-6 rounded-2xl border border-gray-100 h-full">
                                 <h3 className="font-bold text-galaxy">{f.title}</h3>
                                 <p className="mt-2 text-sm text-gray-500 leading-relaxed">{f.desc}</p>
                             </div>
+                            </Reveal>
                         ))}
                     </div>
                 </div>

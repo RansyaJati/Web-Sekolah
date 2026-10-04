@@ -34,6 +34,7 @@ function useScrollReveal<T extends HTMLElement>(): [(node: T | null) => void, bo
 }
 
 interface Program {
+    code: string;
     title: string;
     duration: string;
     img: string | null;
@@ -66,6 +67,11 @@ const PROGRAM_GRADIENTS = [
     'from-sky to-galaxy',
 ];
 
+/** Per-program photo sizing (photo only, card stays the same). */
+const PHOTO_SCALE: Record<string, string> = {
+    TEI: 'scale-110',
+};
+
 export default function Welcome(_props: PageProps) {
     const [heroRef, heroVisible] = useScrollReveal<HTMLElement>();
     const [stripRef, stripVisible] = useScrollReveal<HTMLDivElement>();
@@ -96,6 +102,7 @@ export default function Welcome(_props: PageProps) {
                 if (cancelled) return;
                 setPrograms(
                     programData.map((p, i: number) => ({
+                        code: p.code,
                         title: p.name,
                         duration: p.duration,
                         img: p.image,
@@ -154,7 +161,9 @@ export default function Welcome(_props: PageProps) {
                 <img
                     src="/images/smkn1_upacara.png"
                     alt="Upacara SMK Negeri 1 Cimahi"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover anim-hero-settle"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
                 <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
@@ -178,12 +187,6 @@ export default function Welcome(_props: PageProps) {
                             </Link>
                         </div>
                     </div>
-                </div>
-
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                    <span className="w-14 h-[5px] rounded-full bg-white" />
-                    <span className="w-5 h-[5px] rounded-full bg-white/40" />
-                    <span className="w-5 h-[5px] rounded-full bg-white/40" />
                 </div>
             </section>
 
@@ -259,7 +262,7 @@ export default function Welcome(_props: PageProps) {
                             onClick={() => scrollCards(-1)}
                             disabled={!canPrev}
                             aria-label="Geser ke kiri"
-                            className="hidden sm:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-galaxy text-white items-center justify-center shadow-lg hover:bg-planetary transition-all disabled:opacity-30 disabled:cursor-default"
+                            className="hidden sm:flex absolute -left-5 top-[calc(50%+1.5rem)] -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-galaxy text-white items-center justify-center shadow-lg hover:bg-planetary transition-all disabled:opacity-30 disabled:cursor-default"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -270,29 +273,46 @@ export default function Welcome(_props: PageProps) {
                         <div
                             ref={trackRef}
                             onScroll={updateCarousel}
-                            className="flex gap-6 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-2 -mx-1 px-1"
+                            className="flex gap-6 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pt-14 pb-2 -mx-1 px-1"
                         >
                             {programs.map((j) => (
                                 <article
                                     key={j.title}
-                                    className="group relative rounded-lg overflow-hidden h-[380px] bg-gray-200 shadow-sm hover:shadow-xl transition-shadow duration-500 snap-start shrink-0 w-[85%] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+                                    className="group relative h-[380px] snap-start shrink-0 w-[85%] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                                 >
                                     {j.img ? (
-                                        <img src={j.img} alt={j.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
+                                        <>
+                                            {/* Visible gray rounded card behind the photo */}
+                                            <div className="absolute inset-x-0 top-0 bottom-0 rounded-[10px] border border-gray-200 bg-gradient-to-b from-[#D8DCE2] via-[#EDEFF2] to-white shadow-sm transition-shadow duration-500 group-hover:shadow-xl" />
+                                            {/* Framed photo, head sticks out above the card */}
+                                            <div className="absolute left-3 right-3 -top-14 bottom-[118px] overflow-hidden rounded-lg shadow-md">
+                                                <div className={`h-full w-full origin-top ${PHOTO_SCALE[j.code] ?? ''}`}>
+                                                    <img src={j.img} alt={j.title} loading="lazy" decoding="async" className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
+                                                </div>
+                                                {/* Slight gray wash on top + blue fade at bottom */}
+                                                <div className="pointer-events-none absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-gray-500/20 to-transparent" />
+                                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-t from-galaxy/80 via-galaxy/25 to-transparent" />
+                                            </div>
+                                            {/* Title on the gray card */}
+                                            <div className="absolute inset-x-0 bottom-0 px-6 pb-5">
+                                                <h3 className="font-display text-galaxy text-[22px] leading-[1.2]">{j.title}</h3>
+                                                <p className="mt-1 text-xs text-gray-500">{j.duration}</p>
+                                            </div>
+                                        </>
                                     ) : (
-                                        <div className={`absolute inset-0 bg-gradient-to-b ${j.gradient}`}>
+                                        <div className={`relative h-full rounded-[10px] overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-500 bg-gradient-to-b ${j.gradient}`}>
                                             <div className="absolute inset-0 flex items-center justify-center">
                                                 <span className="font-display text-white/20 text-[110px] leading-none select-none">
                                                     {j.title.charAt(0)}
                                                 </span>
                                             </div>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-galaxy via-galaxy/35 to-transparent" />
+                                            <div className="absolute bottom-0 left-0 right-0 p-6">
+                                                <h3 className="font-display text-white text-2xl leading-[1.2]">{j.title}</h3>
+                                                <p className="mt-1.5 text-white/70 text-xs">{j.duration}</p>
+                                            </div>
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-galaxy via-galaxy/35 to-transparent" />
-                                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                                        <h3 className="font-display text-white text-2xl leading-[1.2]">{j.title}</h3>
-                                        <p className="mt-1.5 text-white/70 text-xs">{j.duration}</p>
-                                    </div>
                                 </article>
                             ))}
                         </div>
@@ -302,7 +322,7 @@ export default function Welcome(_props: PageProps) {
                             onClick={() => scrollCards(1)}
                             disabled={!canNext}
                             aria-label="Geser ke kanan"
-                            className="hidden sm:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-galaxy text-white items-center justify-center shadow-lg hover:bg-planetary transition-all disabled:opacity-30 disabled:cursor-default"
+                            className="hidden sm:flex absolute -right-5 top-[calc(50%+1.5rem)] -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-galaxy text-white items-center justify-center shadow-lg hover:bg-planetary transition-all disabled:opacity-30 disabled:cursor-default"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
