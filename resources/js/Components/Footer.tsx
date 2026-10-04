@@ -94,8 +94,15 @@ export default function Footer() {
 
             {/* Bottom bar */}
             <div className="border-t border-white/10">
-                <div className="max-w-container mx-auto px-6 lg:px-12 py-4 text-center text-xs text-white/50">
-                    &copy; {new Date().getFullYear()} SMK Negeri 1 Cimahi. Hak Cipta Dilindungi.
+                <div className="max-w-container mx-auto px-6 lg:px-12 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-white/50 gap-2">
+                    <div>
+                        &copy; {new Date().getFullYear()} SMK Negeri 1 Cimahi. Hak Cipta Dilindungi.
+                    </div>
+                    <div>
+                        <Link href="/admin/login" className="hover:text-white/80 transition-colors">
+                            Admin Portal
+                        </Link>
+                    </div>
                 </div>
             </div>
         </footer>
