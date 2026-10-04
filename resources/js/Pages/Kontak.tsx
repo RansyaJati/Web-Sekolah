@@ -56,10 +56,15 @@ export default function Kontak() {
         >
             {/* HERO */}
             <section className="relative bg-galaxy overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-20 right-20 w-80 h-80 rounded-full bg-universe blur-3xl" />
-                    <div className="absolute -bottom-10 left-10 w-96 h-96 rounded-full bg-planetary blur-3xl" />
-                </div>
+                <img
+                    src="/images/smkn.jpg"
+                    alt="Gedung SMK Negeri 1 Cimahi"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover anim-hero-settle"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-24">
                     <div className="anim-fade-up">
                     <span className="inline-block text-sm font-medium text-venus mb-4">Hubungi Kami</span>

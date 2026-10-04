@@ -59,7 +59,7 @@ export default function ProgramDetail() {
                             {/* Header card */}
                             <div className="relative rounded-2xl overflow-hidden bg-galaxy">
                                 {program.image && (
-                                    <img src={program.image} alt={program.name} className="w-full h-64 sm:h-80 object-cover" />
+                                    <img src={program.image} alt={program.name} loading="lazy" decoding="async" className="w-full h-72 sm:h-96 object-cover object-top" />
                                 )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-galaxy via-galaxy/40 to-transparent" />
                                 <div className="absolute bottom-0 left-0 right-0 p-7 lg:p-9">
@@ -117,12 +117,21 @@ export default function ProgramDetail() {
                                     >
                                         Daftar PPDB
                                     </Link>
-                                    <Link
-                                        href="/kontak"
-                                        className="text-planetary text-sm font-semibold px-7 py-3 rounded-[10px] border border-planetary hover:bg-planetary hover:text-white transition-colors"
+                                    <button
+                                        onClick={() =>
+                                            window.dispatchEvent(
+                                                new CustomEvent('sapa:open', {
+                                                    detail: `Jelaskan program ${program.name} (${program.code}): deskripsi, kompetensi yang dipelajari, dan prospek kerjanya.`,
+                                                }),
+                                            )
+                                        }
+                                        className="inline-flex items-center gap-2 text-planetary text-sm font-semibold px-7 py-3 rounded-[10px] border border-planetary hover:bg-planetary hover:text-white transition-colors"
                                     >
-                                        Tanya Program Ini
-                                    </Link>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        Tanya Program Ini via SAPA
+                                    </button>
                                 </div>
                             </div>
                         </div>

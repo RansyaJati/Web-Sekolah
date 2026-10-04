@@ -1,5 +1,6 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import SectionHeader from '@/Components/SectionHeader';
+import Reveal from '@/Components/Reveal';
 import { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { cmsService, type ProgramDTO } from '@/services/cms';
@@ -44,6 +45,7 @@ export default function ProgramKeahlian() {
                 <div className="absolute inset-0 bg-gradient-to-r from-galaxy/95 via-galaxy/60 to-galaxy/5" />
                 <div className="absolute inset-0 bg-gradient-to-t from-galaxy/90 via-transparent to-transparent" />
                 <div className="relative max-w-container mx-auto px-6 lg:px-12 py-20 lg:py-24">
+                    <div className="anim-fade-up">
                     <span className="inline-block text-sm font-medium text-venus mb-4">9 Program Unggulan</span>
                     <h1 className="font-display text-white text-4xl sm:text-5xl leading-[1.1]">
                         Program Keahlian
@@ -51,6 +53,7 @@ export default function ProgramKeahlian() {
                     <p className="mt-4 text-white/70 text-base max-w-lg leading-relaxed">
                         Kurikulum selaras industri dengan pembelajaran teaching factory dan didukung 50+ perusahaan mitra.
                     </p>
+                    </div>
                 </div>
             </section>
 
@@ -65,7 +68,7 @@ export default function ProgramKeahlian() {
                     {loading ? (
                         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="h-[280px] rounded-xl bg-gray-100 animate-pulse" />
+                                <div key={i} className="h-[360px] rounded-xl bg-gray-100 animate-pulse" />
                             ))}
                         </div>
                     ) : error ? (
@@ -78,11 +81,11 @@ export default function ProgramKeahlian() {
                         </div>
                     ) : (
                         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {programs.map((p) => (
+                            {programs.map((p, i) => (
+                                <Reveal key={p.id} delay={(i % 3) * 90} className="h-full">
                                 <Link
-                                    key={p.id}
                                     href={`/program-keahlian/${p.id}`}
-                                    className="group relative rounded-xl overflow-hidden h-[280px] bg-gray-200 shadow-sm hover:shadow-xl transition-shadow"
+                                    className="group relative block rounded-xl overflow-hidden h-[360px] bg-gray-200 shadow-sm hover:shadow-xl transition-shadow"
                                 >
                                     {p.image ? (
                                         <img
@@ -90,7 +93,7 @@ export default function ProgramKeahlian() {
                                             alt={p.name}
                                             loading="lazy"
                                             decoding="async"
-                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                                         />
                                     ) : (
                                         <div className="absolute inset-0 bg-gradient-to-b from-planetary to-galaxy flex items-center justify-center">
@@ -99,7 +102,7 @@ export default function ProgramKeahlian() {
                                             </span>
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-galaxy via-galaxy/35 to-transparent" />
+                                    <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-galaxy via-galaxy/40 to-transparent pointer-events-none" />
                                     <div className="absolute bottom-0 left-0 right-0 p-6">
                                         <span className="inline-block text-[11px] font-bold text-white/90 bg-white/15 backdrop-blur px-2.5 py-1 rounded-full mb-2">
                                             {p.code} • {p.duration}
@@ -113,6 +116,7 @@ export default function ProgramKeahlian() {
                                         </span>
                                     </div>
                                 </Link>
+                                </Reveal>
                             ))}
                         </div>
                     )}

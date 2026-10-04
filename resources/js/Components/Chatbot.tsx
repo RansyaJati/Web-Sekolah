@@ -18,6 +18,11 @@ export default function Chatbot() {
     const [hasError, setHasError] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const messagesRef = useRef<ChatMessage[]>([]);
+
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,6 +80,38 @@ export default function Chatbot() {
     const handleClose = () => {
         setIsOpen(false);
     };
+
+    // External opener: window.dispatchEvent(new CustomEvent('sapa:open', { detail: 'pesan?' }))
+    useEffect(() => {
+        const open = (e: Event) => {
+            setIsOpen(true);
+            setHasError(false);
+            const preset = (e as CustomEvent<string | undefined>).detail;
+            if (typeof preset !== 'string' || !preset.trim()) return;
+            const text = preset.trim();
+            const userMsg: ChatMessage = {
+                id: createMessageId(),
+                role: 'user',
+                content: text,
+                timestamp: new Date(),
+            };
+            const history = [...messagesRef.current, userMsg];
+            setMessages(history);
+            setIsLoading(true);
+            chatService
+                .sendMessage(text, messagesRef.current)
+                .then((response) => {
+                    setMessages((prev) => [
+                        ...prev,
+                        { id: createMessageId(), role: 'assistant', content: response, timestamp: new Date() },
+                    ]);
+                })
+                .catch(() => setHasError(true))
+                .finally(() => setIsLoading(false));
+        };
+        window.addEventListener('sapa:open', open);
+        return () => window.removeEventListener('sapa:open', open);
+    }, []);
 
     return (
         <>

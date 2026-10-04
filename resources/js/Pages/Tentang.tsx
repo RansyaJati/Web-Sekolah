@@ -119,6 +119,40 @@ export default function Tentang() {
                 </Reveal>
             </section>
 
+            {/* IDENTITAS MAUNG + MOTTO */}
+            <section className="bg-galaxy py-20 lg:py-24 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-10 left-1/4 w-96 h-96 rounded-full bg-planetary blur-3xl" />
+                    <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-universe blur-3xl" />
+                </div>
+                <div className="relative max-w-container mx-auto px-6 lg:px-12 text-center">
+                    <Reveal>
+                        <p className="text-xs font-semibold tracking-[0.25em] uppercase text-venus">
+                            Identitas Kami
+                        </p>
+                        <h2 className="mt-3 font-display text-white text-3xl sm:text-4xl leading-tight">
+                            Sekolah MAUNG Jawa Barat
+                        </h2>
+                        <p className="mt-5 text-white/70 text-base leading-relaxed max-w-2xl mx-auto">
+                            SMKN 1 Cimahi adalah salah satu Sekolah MAUNG di Jawa Barat.
+                            MAUNG merepresentasikan semangat <span className="text-white font-semibold">Manusia Unggulan</span>:
+                            peserta didik yang berkompetensi, terampil, berprestasi, berdaya saing,
+                            dan siap menghadapi dunia industri serta perkembangan teknologi.
+                        </p>
+                    </Reveal>
+                    <Reveal delay={120}>
+                        <blockquote className="mt-10 inline-block border-y border-white/20 py-6 px-8">
+                            <p className="font-display text-venus text-2xl sm:text-3xl italic">
+                                &ldquo;Tiada Hari Tanpa Prestasi&rdquo;
+                            </p>
+                            <cite className="mt-2 block text-xs not-italic tracking-widest uppercase text-white/50">
+                                Motto SMKN 1 Cimahi
+                            </cite>
+                        </blockquote>
+                    </Reveal>
+                </div>
+            </section>
+
             {/* VISI MISI */}
             <section className="bg-milky-way py-20 lg:py-24">
                 <div className="max-w-container mx-auto px-6 lg:px-12">

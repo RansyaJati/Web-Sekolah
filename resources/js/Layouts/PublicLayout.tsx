@@ -9,31 +9,57 @@ interface PublicLayoutProps extends PropsWithChildren {
     description?: string;
 }
 
-/** Max wait for full asset load before revealing anyway (slow-network safety). */
-const REVEAL_TIMEOUT_MS = 5000;
-
 export default function PublicLayout({ title, description, children }: PublicLayoutProps) {
     const { url } = usePage();
     const [ready, setReady] = useState(false);
 
-    // Reveal the page only after all (eager) images/assets are loaded.
-    // Lazy images never block window.load, so below-fold content stays fast.
+    // Reveal each page only after its eager images (esp. banners) finish
+    // loading. Lazy below-fold images never block. 6s safety fallback.
     useEffect(() => {
-        if (document.readyState === 'complete') {
-            setReady(true);
-            return;
-        }
-        const fallback = setTimeout(() => setReady(true), REVEAL_TIMEOUT_MS);
-        const onLoad = () => {
-            clearTimeout(fallback);
-            setReady(true);
+        let cancelled = false;
+        setReady(false);
+        const done = () => {
+            if (!cancelled) setReady(true);
         };
-        window.addEventListener('load', onLoad);
+        const fallback = setTimeout(done, 6000);
+
+        // Wait a tick so React has painted <img> tags into the DOM.
+        const timer = setTimeout(() => {
+            if (cancelled) return;
+            const pending = Array.from(
+                document.querySelectorAll('main img, header img'),
+            ).filter(
+                (el) =>
+                    (el as HTMLImageElement).loading !== 'lazy' &&
+                    !(el as HTMLImageElement).complete,
+            ) as HTMLImageElement[];
+
+            if (pending.length === 0) {
+                clearTimeout(fallback);
+                done();
+                return;
+            }
+
+            let remaining = pending.length;
+            const one = () => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearTimeout(fallback);
+                    done();
+                }
+            };
+            pending.forEach((img) => {
+                img.addEventListener('load', one, { once: true });
+                img.addEventListener('error', one, { once: true });
+            });
+        }, 60);
+
         return () => {
-            window.removeEventListener('load', onLoad);
+            cancelled = true;
             clearTimeout(fallback);
+            clearTimeout(timer);
         };
-    }, []);
+    }, [url]);
 
     return (
         <div className="bg-white text-gray-900 antialiased">
@@ -56,7 +82,7 @@ export default function PublicLayout({ title, description, children }: PublicLay
                 <img
                     src="/images/logosmk.png"
                     alt=""
-                    className="w-16 h-16 object-contain brightness-0 invert"
+                    className="w-16 h-16 object-contain"
                 />
                 <p className="font-display text-white text-lg font-bold">SMK Negeri 1 Cimahi</p>
                 <div className="flex gap-1.5">
