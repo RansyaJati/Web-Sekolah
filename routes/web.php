@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\JobVacancyController;
 use App\Http\Controllers\Api\PartnerController;
 use App\Http\Controllers\Api\KnowledgeBaseController;
+use App\Http\Controllers\Api\SettingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -86,6 +87,11 @@ Route::prefix('api')->group(function () {
     Route::post('/knowledge-base',         [KnowledgeBaseController::class, 'store']);
     Route::put('/knowledge-base/{id}',     [KnowledgeBaseController::class, 'update']);
     Route::delete('/knowledge-base/{id}',  [KnowledgeBaseController::class, 'destroy']);
+
+    // Settings
+    Route::get('/settings',                [SettingController::class, 'index']);
+    Route::get('/settings/{key}',          [SettingController::class, 'show']);
+    Route::post('/settings/{key}',         [SettingController::class, 'update']);
 });
 
 /*
